@@ -1,0 +1,300 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI前贴 · 在线演示</title><style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:#1f2937;font-size:14px}
+.top{display:flex;align-items:center;gap:28px;padding:0 32px;height:58px;border-bottom:1px solid #eef0f4;position:sticky;top:0;background:#fff;z-index:20}
+.logo{font-weight:700;font-size:17px;color:#2E6DB4}.nav a{margin-right:22px;color:#4b5563;text-decoration:none;padding:18px 0;border-bottom:2px solid transparent;cursor:pointer}
+.nav a.on{color:#2E6DB4;border-bottom-color:#2E6DB4;font-weight:600}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 32px 80px}
+.steps{display:flex;margin:4px 0 26px}.st{flex:1;display:flex;align-items:center;gap:10px;color:#9ca3af;font-size:13px}
+.st i{font-style:normal;width:26px;height:26px;border-radius:50%;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;background:#fff}
+.st:after{content:"";flex:1;height:1.5px;background:#e5e7eb;margin-right:10px}.st:last-child:after{display:none}
+.st.go{cursor:pointer}.st.go:hover{color:#2E6DB4}.st.done i{background:#2E6DB4;border-color:#2E6DB4;color:#fff}.st.now{color:#2E6DB4;font-weight:600}.st.now i{border-color:#2E6DB4;color:#2E6DB4}
+.card{border:1px solid #eef0f4;border-radius:10px;padding:20px 22px;margin-bottom:16px;background:#fff}
+.card h3{margin:0 0 14px;font-size:15px}.muted{color:#6b7280;font-size:12.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label.f{display:block;font-size:12.5px;color:#4b5563;margin:0 0 6px}
+select,input[type=text],textarea{width:100%;padding:8px 10px;border:1px solid #d9dee7;border-radius:6px;font:inherit;background:#fff;color:#1f2937}
+textarea{min-height:60px;resize:vertical;line-height:1.6}
+.up{display:block;border:1.5px dashed #cfd6e2;border-radius:10px;padding:30px;text-align:center;color:#6b7280;background:#fafbfd;cursor:pointer}
+.up.drag{border-color:#2E6DB4;background:#f0f6fe}.up.off{opacity:.55;cursor:not-allowed}.up b{color:#1f2937;font-size:15px}
+.bar{height:6px;background:#eef0f4;border-radius:3px;overflow:hidden;margin-top:12px}.bar div{height:100%;background:#2E6DB4;width:0}
+.btn{padding:9px 20px;border-radius:7px;border:1px solid #2E6DB4;background:#2E6DB4;color:#fff;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}
+.btn:hover{background:#255d9c}.btn.ghost{background:#fff;color:#2E6DB4}.btn.sm{padding:5px 12px;font-size:12.5px}.btn:disabled{opacity:.45;cursor:not-allowed}
+.acts{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;align-items:center}
+.kv{display:grid;grid-template-columns:100px 1fr;gap:10px 14px;font-size:13.5px;line-height:1.7}.kv dt{color:#6b7280}.kv dd{margin:0}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:#f0f6fe;color:#2E6DB4;margin-right:4px}
+.tag.y{background:#fff6e0;color:#9a6a00}.tag.g{background:#e8f7ee;color:#1b7a36}
+.roles{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.rc{border:1px solid #eef0f4;border-radius:10px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.rc .ph{aspect-ratio:3/4;background:#f5f7fa;display:flex;align-items:center;justify-content:center;color:#9ca3af;cursor:zoom-in;overflow:hidden}
+.rc .ph img{width:100%;height:100%;object-fit:cover;object-position:top}
+.rc .ri{padding:10px;display:flex;flex-direction:column;gap:6px}.rc .ri input,.rc .ri textarea{font-size:12.5px;padding:5px 8px}.rc .ri textarea{min-height:44px}
+.rc .row{display:flex;gap:6px}.rc .row input:first-child{width:52px;flex:none;text-align:center;font-weight:700}
+.rc .x{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:50%;background:#fffffff0;border:1px solid #e5e7eb;cursor:pointer;font-size:13px;line-height:20px;text-align:center;color:#6b7280}
+.add{border:1.5px dashed #cfd6e2;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:34px;color:#9ca3af;cursor:pointer;min-height:220px}
+.add:hover{border-color:#2E6DB4;color:#2E6DB4}
+.hk{border:1px solid #eef0f4;border-radius:8px;padding:12px 14px;position:relative;background:#fff}
+.hk .h{font-weight:600;line-height:1.55;padding-right:20px}.hk .t{font-size:12px;color:#2E6DB4;margin-top:6px}
+.hk .hb{font-size:13px;line-height:1.65;padding-right:16px}.hk .x{position:absolute;top:8px;right:10px;cursor:pointer;color:#9ca3af;font-size:15px}
+.hk.empty{border-style:dashed;color:#9ca3af;display:flex;align-items:center;justify-content:center;min-height:110px}
+.lib{margin-top:18px;background:#f7f9fc;border:1px solid #e6ebf3;border-radius:10px;padding:16px 18px}
+.lib h4{margin:0 0 10px;font-size:14px;color:#33507a}.lib .list{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:560px;overflow:auto;margin-top:12px;padding-right:4px}
+.ver{border:1px solid #eef0f4;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;cursor:pointer}.ver.on{border-color:#2E6DB4;box-shadow:0 0 0 3px #e3eefb}
+.ver input.tt{font-weight:700;font-size:14.5px}.shuang{background:#fff6e0;border-left:3px solid #E0A21B;padding:6px 9px;border-radius:4px;font-size:13px;line-height:1.6}
+.av{width:30px;height:30px;border-radius:50%;object-fit:cover;object-position:top;background:#e5e7eb;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#4b5563}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid #f0f2f5;padding:8px;text-align:left;vertical-align:top}th{color:#6b7280;font-weight:500;background:#fafbfd}
+td textarea{min-height:52px;font-size:13px}td input{font-size:13px;padding:5px 6px}
+.thumbs{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}.thumb{width:96px;text-align:center}.thumb img,.thumb .ph2{width:96px;height:128px;border-radius:8px;object-fit:cover;object-position:top;cursor:zoom-in;background:#f5f7fa;display:block}
+.video{width:300px;aspect-ratio:9/16;border-radius:10px;background:linear-gradient(160deg,#eef3fb,#dfe8f6);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#2E6DB4;overflow:hidden}
+.video video{width:100%;height:100%;object-fit:cover;background:#000}
+.spin{width:30px;height:30px;border:3px solid #dbe6f5;border-top-color:#2E6DB4;border-radius:50%;animation:s 1s linear infinite;display:inline-block}@keyframes s{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.prog{display:flex;gap:14px;align-items:center;padding:26px}.err{color:#b42318;background:#fde8e8;border-radius:8px;padding:12px 14px;white-space:pre-wrap;font-size:13px}
+.warn{color:#9a6a00;font-size:12.5px}
+pre{white-space:pre-wrap;font:12.5px/1.7 ui-monospace,Menlo,monospace;background:#fafbfd;border:1px solid #eef0f4;border-radius:8px;padding:14px;margin:0}
+.plist a{display:block;padding:9px 12px;border-radius:6px;color:#374151;cursor:pointer}.plist a.on{background:#f0f6fe;color:#2E6DB4;font-weight:600}
+iframe{width:100%;height:calc(100vh - 60px);border:0}
+.lb{position:fixed;inset:0;background:#000000cc;display:flex;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}.lb img{max-width:90vw;max-height:90vh;border-radius:8px}
+.modal{position:fixed;inset:0;background:#0006;display:flex;align-items:center;justify-content:center;z-index:40}.modal .box{background:#fff;border-radius:12px;padding:22px 24px;width:460px}
+.histbar{display:flex;justify-content:flex-end;margin:-8px 0 10px}
+.histbtn{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid #d9dee7;border-radius:9px;background:#fff;color:#1f2937;font:inherit;font-weight:600;cursor:pointer}
+.histbtn:hover{border-color:#2E6DB4;color:#2E6DB4}.histbtn .n{background:#ede9fe;color:#6d28d9;border-radius:10px;padding:0 8px;font-size:12px;line-height:20px}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:440px;background:#fff;border-left:1px solid #eef0f4;box-shadow:-8px 0 24px #0000001a;z-index:45;display:flex;flex-direction:column}
+.drawer .hd{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #eef0f4}.drawer .bd{overflow:auto;padding:14px 20px;flex:1}
+.hi{border:1px solid #eef0f4;border-radius:9px;padding:12px 14px;margin-bottom:10px;cursor:pointer}.hi:hover{border-color:#2E6DB4}.hi.cur{border-color:#2E6DB4;background:#f7fbff}
+.pill{padding:6px 14px;border:1px solid #d9dee7;border-radius:16px;cursor:pointer;font-size:13px;background:#fff;color:#1f2937}.pill.on{border-color:#2E6DB4;color:#2E6DB4;background:#f0f6fe;font-weight:600}
+.chk{display:flex;flex-wrap:wrap;gap:10px 18px;margin:8px 0 16px}
+</style></head><body>
+<div class="top"><div class="logo">AI前贴</div><div class="nav" id="nav"></div></div>
+<div id="page"></div><div id="ov"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* ---------- 线上演示版:没有后台,用本机版真实跑出的结果模拟接口 ---------- */
+const DEMO=__DEMO__;
+const DB=JSON.parse(JSON.stringify(DEMO.jobs));
+try{const saved=JSON.parse(localStorage.getItem("qt_demo_db")||"{}");Object.assign(DB,saved)}catch(e){}
+const persist=()=>{try{const own={};for(const k in DB)if(DB[k]._own)own[k]=DB[k];localStorage.setItem("qt_demo_db",JSON.stringify(own))}catch(e){}};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const later=(ms,fn)=>new Promise(r=>setTimeout(()=>{fn();r()},ms));
+function runTask(id,name,stages,done){const j=DB[id];j.tasks[name]={status:"running",stage:stages[0]};
+ stages.forEach((s,i)=>setTimeout(()=>{if(j.tasks[name].status=="running")j.tasks[name].stage=s},i*1100));
+ setTimeout(()=>{done(j);j.tasks[name]={status:"done"};persist()},stages.length*1100+400)}
+async function api(p){await later(80,()=>{});const u=new URL(p,"http://x"),path=u.pathname;
+ if(path=="/api/config")return clone(DEMO.config);if(path=="/api/library")return clone(DEMO.library);if(path=="/api/prompts")return clone(DEMO.prompts);
+ if(path=="/api/jobs"){const mode=u.searchParams.get("mode");return Object.values(DB).filter(j=>j._own&&j.meta.mode==mode).sort((a,b)=>b._upd-a._upd).map(j=>({id:j.id,name:j.meta.name,viral:(j.meta.viral||{}).name||"",
+   updated:j._upd/1000,model:j.meta.model||"",seconds:j.meta.seconds||"",title:j.creative&&j.creative[0]?((j.ui||{}).edit||{})["标题钩子"]||j.creative[0]["标题钩子"]:"",
+   progress:j.final?"已出成片":j.teaser?"已生成前贴":j.creative&&j.creative.length?(j.meta.mode=="viral"?"已生成仿写":"已生成创作思路"):j.analysis?"已完成分析":"仅上传"}))}
+ const m=path.match(/^\/api\/job\/(\w+)$/);if(m)return clone(DB[m[1]]);throw new Error("演示版不支持这个操作")}
+async function post(p,b){b=b||{};const [,id,act]=p.match(/^\/api\/job\/(\w+)\/(\w+)$/);const j=DB[id],src=DEMO.jobs[j._src];j._upd=Date.now();
+ if(act=="start"){const sec=Math.min(+b.seconds||src.meta.seconds,DEMO.config.models[b.model]||15);Object.assign(j.meta,{model:b.model,seconds:sec,title:b.title,episodes:b.episodes,tags:b.tags});
+  j.analysis=null;j.roles=[];j.hooks=[];j.creative=[];j.breakdown=null;j.teaser="";j.final="";j.mirrors=[];
+  runTask(id,"analyze",j.meta.mode=="viral"?["正在抽取原片画面","正在识别人脸","正在把原片声音转成文字","模型正在看原片并分析","正在拆解爆款视频的画面","模型正在拆解爆款结构"]:["正在抽取画面","正在识别人脸","正在把原片声音转成文字","模型正在看原片并分析","正在从高光钩子库推荐 3 条钩子"],
+   x=>{x.analysis=clone(src.analysis);x.roles=clone(src.roles);x.hooks=clone(src.hooks||[]);x.breakdown=clone(src.breakdown||null)})}
+ else if(act=="creative")runTask(id,"creative",["模型正在按 3 条钩子写创作思路","正在检查爽点和衔接"],x=>{x.creative=clone(src.creative)})
+ else if(act=="rewrite")runTask(id,"rewrite",["模型正在按爆款剧情换脸复刻","正在改写结尾以衔接原片"],x=>{x.creative=clone(src.creative)})
+ else if(act=="prompt")runTask(id,"prompt",["正在重写提示词"],x=>{x.new_prompt=(b.version||{})["视频生成提示词"]||""})
+ else if(act=="simulate"){j.teaser=src.teaser_url;j.final=""}
+ else if(act=="splice")runTask(id,"splice",["正在拼接前贴和原片,统一为 1080x1920"],x=>{x.final=src.teaser_url})
+ else if(act=="mirror"){j.mirrors=(j.mirrors||[]).concat((b.langs||[]).map(l=>({lang:l,url:src.teaser_url,src:b.src_name||"当前原片"})))}
+ else if(act=="save"){for(const k of ["analysis","roles","hooks","creative","ui"])if(k in b)j[k]=clone(b[k])}
+ persist();return clone(j)}
+function newDemoJob(sid){const src=DEMO.jobs[sid],id="d"+Date.now().toString(36);
+ DB[id]={id,_own:true,_src:sid,_upd:Date.now(),meta:clone(src.meta),tasks:{},analysis:null,roles:[],hooks:[],creative:[],mirrors:[],breakdown:null};persist();return clone(DB[id])}
+let CFG={models:{}},LIB={items:[]},PROMPTS={},tab="origin",pk=null;
+const mkS=()=>({step:0,job:null,upPct:0,upErr:"",vPct:0,vErr:"",model:"",seconds:0,title:"",episodes:"第1集",tags:"",
+  analysis:null,roles:[],hooks:[],breakdown:null,showLib:false,q:"",creative:[],ver:null,edit:null,bgm:"紧张悬疑",subs:true,scenes:[],mirrorOpen:false});
+const STATES={origin:mkS(),viral:mkS()};let S=STATES.origin;
+const TABS=[["origin","原片理解"],["viral","爆款复刻"],["lib","短剧高光钩子库"],["prompt","提示词"]];
+const isV=()=>S===STATES.viral;
+function nav(){$("#nav").innerHTML=TABS.map(([k,n])=>`<a class="${k==tab?"on":""}" onclick="tab='${k}';if(STATES[tab])S=STATES[tab];render()">${n}</a>`).join("")}
+function steps(){const n=isV()?[[0,"上传爆款与原片"],[1,"分析原片与爆款"],[2,"生成爆款仿写"],[3,"人工确认、调整"],[4,"生成前贴并拼接原片"]]:[[0,"上传原片"],[1,"分析原片并生成创作思路"],[3,"人工确认、调整"],[4,"生成前贴并拼接原片"]];
+ return `<div class="steps">`+n.map(([i,x],k)=>{const cur=i==S.step||(!isV()&&i==1&&S.step==2),done=!cur&&(i<S.step||i<=(S.max||0)),go=!cur&&i<=(S.max||0);
+  return `<div class="st ${done?"done":cur?"now":""} ${go?"go":""}" ${go?`onclick="S.step=${i};render()" title="返回查看"`:""}><i>${done?"✓":k+1}</i>${x}</div>`}).join("")+`</div>`}
+function zoom(u){if(u)$("#ov").innerHTML=`<div class="lb" onclick="this.remove()"><img src="${u}"></div>`}
+function av(code){const r=S.roles.find(x=>x.code==code);return r&&r.img?`<img class="av" src="${r.img}" title="${esc(code)}">`:`<span class="av">${esc(code)}</span>`}
+function fmt(s){s=Math.round(s);return `${Math.floor(s/60)}分${s%60}秒`}
+function T(name){return S.job&&S.job.tasks&&S.job.tasks[name]||{}}
+
+/* ---------- 轮询 ---------- */
+function poll(st){st=st||S;clearTimeout(st._t);st._t=setTimeout(async()=>{try{st.job=await api("/api/job/"+st.job.id);absorb(st);}catch(e){}if(S===st)render();
+ if(Object.values(st.job.tasks||{}).some(t=>t.status=="running"))poll(st)},2000)}
+function absorb(st){st=st||S;const j=st.job,t=n=>(j.tasks||{})[n]||{};
+ if(t("analyze").status=="done"&&!st.analysis){st.analysis=j.analysis;st.roles=j.roles||[];st.hooks=j.hooks||[];st.breakdown=j.breakdown||null;
+  if(st===STATES.origin&&!t("creative").status&&st.hooks.length==3)setTimeout(()=>{if(S===st)creative(true)},0)}
+ if((t("creative").status=="done"||t("rewrite").status=="done")&&st.step>=1&&!st.creative.length){st.creative=j.creative||[];if(st===STATES.viral&&st.creative.length)st.ver=0}
+ if(t("prompt").status=="done"&&st.edit&&j.new_prompt&&st._wantPrompt){st.edit["视频生成提示词"]=j.new_prompt;st._wantPrompt=false}}
+
+/* ---------- 第一步 ---------- */
+const DEMO_TIP="在线演示版没有后台,不能分析新上传的视频。请选择下方的演示样例(结果来自本机版真实运行);分析自己的视频请使用本机版。";
+function upload(file){if(file)alert(DEMO_TIP)}
+function pickSample(sid){const j=newDemoJob(sid);S.max=0;S.job=j;S.model=j.meta.model;S.seconds=j.meta.seconds;S.analysis=null;S.creative=[];refreshHist();render()}
+function samplePills(){const L=DEMO.samples[isV()?"viral":"origin"];return `<div class="opt" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px">${L.map(x=>`<span class="pill ${S.job&&S.job._src==x.id?"on":""}" onclick="event.preventDefault();event.stopPropagation();pickSample('${x.id}')">${esc(x.label)}</span>`).join("")}</div>`}
+function secOpts(){const lim=CFG.models[S.model]||15,o=[];for(let s=5;s<lim;s+=5)o.push(s);o.push(lim);if(!o.includes(S.seconds))S.seconds=lim;return o}
+function viralCard(){const v=S.job&&S.job.meta.viral;
+ return `<div class="card"><h3>上传爆款视频</h3><div class="up" onclick="alert(DEMO_TIP)">
+ ${v?`<b>${esc(v.name)}</b><div class="muted" style="margin-top:6px">时长 ${fmt(v.duration)} · ${v.has_audio?"有声音":"无声音"}</div>`:`<b>点击上传爆款视频</b><div class="muted" style="margin-top:6px">不超过 5 分钟 · 在线演示版请在下方选择演示样例</div>`}</div></div>`}
+function step0(){const m=S.job&&S.job.meta,ready=m&&(!isV()||m.viral);
+ return (isV()?viralCard():"")+`<div class="card"><h3>上传原片</h3>
+ <label class="up" id="drop"><input type="file" accept="video/*" hidden onchange="upload(this.files[0])">
+ ${m?`<b>${esc(m.name)}</b><div class="muted" style="margin-top:6px">时长 ${fmt(m.duration)} · ${m.width}×${m.height} · ${m.has_audio?"有声音":"无声音"}</div>`:
+   `<b>点击或拖入原片视频</b><div class="muted" style="margin-top:6px">不超过 25 分钟 · mp4 / mov 等常见格式</div>`}
+ <div class="muted" style="margin-top:14px">在线演示版请选择演示样例${isV()?"(原片和爆款成对选择)":""}</div>${samplePills()}
+ </label>
+ <div class="grid3" style="margin-top:18px">
+  <div><label class="f">视频模型</label><select onchange="S.model=this.value;S.seconds=0;render()">${Object.entries(CFG.models).map(([k,v])=>`<option value="${k}" ${k==S.model?"selected":""}>${k}(最长 ${v} 秒)</option>`).join("")}</select></div>
+  <div><label class="f">前贴时长(由所选模型决定上限)</label><select onchange="S.seconds=+this.value">${secOpts().map(x=>`<option ${x==S.seconds?"selected":""}>${x}</option>`).join("")}</select></div>
+  <div><label class="f">剧名(选填,帮助分析)</label><input type="text" value="${esc(S.title)}" oninput="S.title=this.value"></div></div>
+ <div class="grid2" style="margin-top:14px"><div><label class="f">处理的集数</label><input type="text" value="${esc(S.episodes)}" oninput="S.episodes=this.value"></div>
+  <div><label class="f">投放后台标签(选填)</label><input type="text" value="${esc(S.tags)}" placeholder="二创模版、剧ID、素材指派组等" oninput="S.tags=this.value"></div></div></div>
+ <div class="acts"><button class="btn" ${ready?"":"disabled"} onclick="start()">开始分析</button></div>`}
+async function start(){try{S.analysis=null;S.roles=[];S.hooks=[];S.breakdown=null;S.creative=[];S.ver=null;S.edit=null;S.showLib=false;
+ S.max=1;_saved="";S.job=await post(`/api/job/${S.job.id}/start`,{model:S.model,seconds:S.seconds,title:S.title,episodes:S.episodes,tags:S.tags,mode:isV()?"viral":""});S.step=1;render();poll()}catch(e){alert(e.message)}}
+
+/* ---------- 第二步 ---------- */
+function progress(name,retry){const t=T(name);
+ if(t.status=="running")return `<div class="card prog"><span class="spin"></span><div><b>${esc(t.stage||"处理中")}</b><div class="muted">真实调用本机模型,请不要关闭本页和程序窗口</div></div></div>`;
+ if(t.status=="error")return `<div class="card"><div class="err">出错了:${esc(t.error)}</div><div class="acts" style="margin-top:12px"><button class="btn" onclick="${retry}">重试</button></div></div>`;
+ return ""}
+function step1(){const p=progress("analyze","start()");if(p)return p+`<div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button></div>`;
+ const a=S.analysis;if(!a)return `<div class="card">尚未分析</div>`;
+ const lim=5,chosen=new Set(S.hooks.map(h=>h.id));
+ const lib=LIB.items.filter(x=>!S.q||(x.title+x.hook+x.highlight+x.conflict).toLowerCase().includes(S.q.toLowerCase()));
+ const head=`<div class="card"><h3>原片分析 · ${esc(S.job.meta.name)}</h3><dl class="kv">
+ <dt>一句话剧情</dt><dd>${esc(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${esc(a["原片开头"])}</dd>
+ <dt>角色人设</dt><dd>${S.roles.map(r=>`<b>${esc(r.code)}</b> ${esc(r.pos)}${r.name&&r.name!="未知"?"("+esc(r.name)+")":""}:${esc(r.persona)}`).join("<br>")||"未识别到角色"}</dd>
+ <dt>衔接点</dt><dd>${(a["衔接点"]||[]).map(l=>`${esc(l["方式"])}:${esc(l["说明"])}`).join("<br>")}</dd></dl></div>
+ <div class="card"><h3>角色与资产图 <span class="muted">单次分析最多 5 个角色,点击图片可放大</span></h3><div class="roles">
+ ${S.roles.map((r,i)=>`<div class="rc"><span class="x" title="删除" onclick="S.roles.splice(${i},1);render()">×</span>
+  <div class="ph" onclick="zoom('${r.img}')">${r.img?`<img src="${r.img}">`:"暂无图片"}</div>
+  <div class="ri"><div class="row"><input type="text" value="${esc(r.code)}" title="角色称号" oninput="S.roles[${i}].code=this.value"><input type="text" value="${esc(r.pos)}" placeholder="定位" oninput="S.roles[${i}].pos=this.value"></div>
+  <textarea placeholder="人设" oninput="S.roles[${i}].persona=this.value">${esc(r.persona)}</textarea>
+  <label class="btn ghost sm" style="text-align:center">更换图片<input type="file" accept="image/*" hidden onchange="roleImg(${i},this.files[0])"></label></div></div>`).join("")}
+ ${S.roles.length<lim?`<label class="add" title="添加角色">+<input type="file" accept="image/*" hidden onchange="addRole(this.files[0])"></label>`:""}</div></div>`;
+ if(isV())return head+viralBd();
+ return head+`<div class="card"><h3>推荐钩子 <span class="muted">来自短剧高光钩子库,必须选满 3 条(已选 ${S.hooks.length}/3)</span></h3><div class="grid3">
+ ${[0,1,2].map(i=>{const h=S.hooks[i];return h?`<div class="hk"><span class="x" title="删除" onclick="S.hooks.splice(${i},1);render()">×</span>${hkBody(h)}</div>`:`<div class="hk empty">空位:从下方钩子库选择一条</div>`}).join("")}</div>
+ <div style="margin-top:12px"><button class="btn ghost sm" onclick="S.showLib=!S.showLib;render()">${S.showLib?"收起钩子库":"加载更多"}</button></div>
+ ${S.showLib?`<div class="lib"><h4>全部高光钩子(${LIB.date||""},共 ${LIB.items.length} 条)</h4><input type="text" id="q" placeholder="搜索剧名、高光时刻或核心冲突,模糊匹配" value="${esc(S.q)}" oninput="S.q=this.value;render();const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)">
+ <div class="list">${lib.map(x=>`<div class="hk">${hkBody(x)}
+ <div style="margin-top:8px">${chosen.has(x.id)?`<span class="tag g">已在推荐中</span>`:`<button class="btn ghost sm" onclick="pick(${x.id})">选用</button>`}</div></div>`).join("")||`<div class="muted">没有匹配的钩子</div>`}</div></div>`:""}</div>
+ ${ideas()}`}
+function viralBd(){const b=S.breakdown||{};
+ return `<div class="card"><h3>爆款拆解 · ${esc(S.job.meta.viral.name)}</h3><dl class="kv" style="margin-bottom:14px">
+ <dt>一句话内容</dt><dd>${esc(b["一句话内容"])}</dd><dt>开头钩子</dt><dd>${esc(b["开头钩子"])}</dd><dt>爽点</dt><dd>${esc(b["爽点"])}</dd></dl>
+ <table><tr><th style="width:90px">时间</th><th style="width:100px">作用</th><th>画面要点</th></tr>${(b["结构"]||[]).map(x=>`<tr><td>${esc(x["时间"])}</td><td><span class="tag">${esc(x["作用"])}</span></td><td>${esc(x["画面要点"])}</td></tr>`).join("")}</table></div>
+ <div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button><button class="btn" ${S.roles.length?"":"disabled"} onclick="rewrite()">生成爆款仿写</button></div>`}
+async function rewrite(){try{S.max=2;S.creative=[];S.ver=null;S.step=2;S.job=await post(`/api/job/${S.job.id}/rewrite`,{analysis:S.analysis,roles:S.roles});render();poll()}catch(e){alert(e.message)}}
+function hkBody(h){return `<div class="hb"><b>高光时刻</b>:${esc(h.highlight)}</div><div class="hb" style="margin-top:6px"><b>核心冲突</b>:${esc(h.conflict)}</div>`}
+function pick(id){if(S.hooks.length>=3){alert("推荐钩子最多 3 条,请先删除一条推荐钩子,再选用");return}S.hooks.push({...LIB.items.find(x=>x.id==id),reason:"手动选择"});render()}
+async function putImg(file){if(file.size>3*1024*1024)throw new Error("演示版图片请小于 3MB");return await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error("图片读取失败"));r.readAsDataURL(file)})}
+async function roleImg(i,f){if(!f)return;try{S.roles[i].img=await putImg(f);render()}catch(e){alert(e.message)}}
+async function addRole(f){if(!f)return;try{const u=await putImg(f);const used=new Set(S.roles.map(r=>r.code));const code=[..."ABCDEFG"].find(c=>!used.has(c));S.roles.push({code,name:"",pos:"",persona:"",img:u});render()}catch(e){alert(e.message)}}
+
+/* ---------- 第三步 ---------- */
+async function creative(auto){try{S.max=1;S.creative=[];S.ver=null;S.step=1;S._hk=JSON.stringify(S.hooks.map(h=>h.id));S.job=await post(`/api/job/${S.job.id}/creative`,{analysis:S.analysis,roles:S.roles,hooks:S.hooks});render();poll()}catch(e){alert(e.message)}}
+function ideas(){const t=T("creative"),changed=S._hk&&S._hk!=JSON.stringify(S.hooks.map(h=>h.id));
+ let h=`<div class="card"><h3>创作思路 <span class="muted">按上面 3 条钩子和原片分析生成,每条钩子一个版本</span></h3>`;
+ if(t.status=="running")h+=`<div class="prog" style="padding:6px 0"><span class="spin"></span><b>${esc(t.stage||"正在生成")}</b></div>`;
+ else if(t.status=="error")h+=`<div class="err">出错了:${esc(t.error)}</div>`;
+ else if(!S.creative.length)h+=`<div class="muted">选满 3 条钩子后生成</div>`;
+ else h+=`<div class="grid3">${S.creative.map((v,i)=>{const hk=S.hooks[(v["使用钩子"]||i+1)-1];return `<div class="ver ${S.ver===i?"on":""}" onclick="S.ver=${i};render()">
+ <div class="muted">${esc(v["版本名称"])} · 使用钩子${v["使用钩子"]||i+1}</div>
+ <input class="tt" type="text" value="${esc(v["标题钩子"])}" onclick="event.stopPropagation()" oninput="S.creative[${i}]['标题钩子']=this.value">
+ <div><span class="tag">${esc(v["创作路线"])}</span></div><div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
+ <div style="line-height:1.65">${esc(v["故事梗概"])}</div>
+ <div class="muted"><b>衔接</b>:${esc((v["衔接设计"]||{})["衔接方式"])}<br>${esc((v["衔接设计"]||{})["前贴结尾状态"])}</div>
+ <div style="display:flex;gap:6px;align-items:center">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div></div>`}).join("")}</div>`;
+ h+=`</div><div class="acts">${changed?`<span class="warn">钩子已更换,请重新生成创作思路</span>`:""}<button class="btn ghost" onclick="S.step=0;render()">上一步</button>
+ <button class="btn ghost" ${S.hooks.length==3&&t.status!="running"?"":"disabled"} onclick="creative()">${changed?"按新钩子重新生成":"都不满意,重新生成"}</button>
+ <button class="btn" ${S.ver===null||changed||t.status=="running"?"disabled":""} onclick="S.edit=JSON.parse(JSON.stringify(S.creative[S.ver]));S.step=3;render()">选这个版本</button></div>`;
+ return h}
+function step2v(){const p=progress("rewrite","rewrite()");if(p)return p+`<div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
+ const v=S.creative[0];if(!v)return `<div class="card">尚未生成</div>`;
+ return `<div class="card"><div class="muted">爆款仿写 · 剧情照爆款走,人物换成原片角色,结尾接原片</div>
+ <input class="tt" type="text" value="${esc(v["标题钩子"])}" style="font-weight:700;font-size:15px;margin:10px 0" oninput="S.creative[0]['标题钩子']=this.value">
+ <dl class="kv" style="margin-bottom:10px"><dt>保留的爆款剧情</dt><dd>${esc(v["保留的爆款剧情"])}</dd>
+ <dt>人物对应</dt><dd>${(v["人物对应"]||[]).map(x=>`爆款里的${esc(x["爆款人物"])} → ${av(x["原片角色"])} ${esc(x["原片角色"])}`).join("　")}</dd>
+ <dt>故事梗概</dt><dd>${esc(v["故事梗概"])}</dd></dl><div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
+ <div class="muted" style="margin-top:10px;line-height:1.7"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])}):${esc((v["衔接设计"]||{})["前贴结尾状态"])}<br>${esc((v["衔接设计"]||{})["为什么接得上"])}</div>
+ <div style="display:flex;gap:6px;align-items:center;margin:10px 0">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div>
+ <table><tr><th style="width:80px">时间</th><th style="width:110px">对应爆款段落</th><th>画面</th><th style="width:28%">台词或旁白</th></tr>${(v["脚本节拍"]||[]).map(b=>`<tr><td>${esc(b["时间"])}</td><td class="muted">${esc(b["对应爆款段落"]||"")}</td><td>${esc(b["画面"])}</td><td>${esc(b["台词或旁白"])}</td></tr>`).join("")}</table></div>
+ <div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button><button class="btn ghost" onclick="rewrite()">不满意,重新仿写</button>
+ <button class="btn" onclick="S.ver=0;S.edit=JSON.parse(JSON.stringify(S.creative[0]));S.step=3;render()">确认,去调整</button></div>`}
+
+/* ---------- 第四步 ---------- */
+function total(){return Math.max(0,...(S.edit["脚本节拍"]||[]).map(b=>{const m=(b["时间"]||"").match(/\d+(\.\d+)?/g);return m?+m[m.length-1]:0}))}
+function step3(){const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r=>(v["出场角色"]||[]).includes(r.code)),t=total();
+ return `<div class="card"><h3>资产图与参数</h3><div class="thumbs">
+ ${cast.map(r=>`<div class="thumb">${r.img?`<img src="${r.img}" onclick="zoom('${r.img}')">`:`<span class="ph2"></span>`}<div class="muted" style="margin-top:4px">${esc(r.code)} ${esc(r.pos)}</div>
+  <label class="muted" style="color:#2E6DB4;cursor:pointer">更换<input type="file" accept="image/*" hidden onchange="roleImg(${S.roles.indexOf(r)},this.files[0])"></label></div>`).join("")}
+ ${S.scenes.map(u=>`<div class="thumb"><img src="${u}" onclick="zoom('${u}')"><div class="muted" style="margin-top:4px">场景图</div></div>`).join("")}
+ <label class="thumb" style="cursor:pointer"><span class="ph2" style="display:flex;align-items:center;justify-content:center;border:1.5px dashed #cfd6e2;color:#9ca3af">+ 场景图</span><input type="file" accept="image/*" hidden onchange="addScene(this.files[0])"></label></div>
+ <div class="grid3" style="margin-top:16px"><div><label class="f">BGM</label><select onchange="S.bgm=this.value">${["紧张悬疑","爽感燃","虐心抒情","轻快","不加BGM"].map(x=>`<option ${x==S.bgm?"selected":""}>${x}</option>`).join("")}</select></div>
+ <div><label class="f">是否需要字幕</label><select onchange="S.subs=this.value=='需要'">${["需要","不需要"].map(x=>`<option ${(x=="需要")==S.subs?"selected":""}>${x}</option>`).join("")}</select></div>
+ <div><label class="f">分辨率</label><input type="text" value="统一 1080×1920(9:16)" disabled></div></div></div>
+ <div class="card"><h3>脚本 <span class="muted">${esc(S.job.meta.model)} · 前贴时长 ${lim} 秒,时间只能在 0 到 ${lim} 秒内修改</span></h3>
+ <label class="f">标题钩子</label><input type="text" value="${esc(v["标题钩子"])}" oninput="S.edit['标题钩子']=this.value" style="margin-bottom:12px;font-weight:600">
+ <table><tr><th style="width:96px">时间</th><th>画面描述</th><th style="width:30%">台词或旁白</th></tr>
+ ${(v["脚本节拍"]||[]).map((b,i)=>`<tr><td><input type="text" value="${esc(b["时间"])}" onchange="S.edit['脚本节拍'][${i}]['时间']=this.value;render()"></td>
+ <td><textarea oninput="S.edit['脚本节拍'][${i}]['画面']=this.value">${esc(b["画面"])}</textarea></td><td><textarea oninput="S.edit['脚本节拍'][${i}]['台词或旁白']=this.value">${esc(b["台词或旁白"])}</textarea></td></tr>`).join("")}</table>
+ ${t>lim?`<div class="warn" style="margin-top:8px">节拍结束时间 ${t} 秒,超过了模型上限 ${lim} 秒,请调整</div>`:""}
+ <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:end"><label class="f" style="margin:0">视频生成提示词</label>
+ <button class="btn ghost sm" ${T("prompt").status=="running"?"disabled":""} onclick="rePrompt()">${T("prompt").status=="running"?"正在重写…":"按修改后的脚本重写提示词"}</button></div>
+ <textarea style="min-height:200px;margin-top:6px" oninput="S.edit['视频生成提示词']=this.value">${esc(v["视频生成提示词"])}</textarea>
+ ${T("prompt").status=="error"?`<div class="err" style="margin-top:8px">${esc(T("prompt").error)}</div>`:""}</div>
+ <div class="acts"><button class="btn ghost" onclick="S.step=isV()?2:1;render()">上一步</button><button class="btn" ${t>lim?"disabled":""} onclick="S.step=4;S.job.teaser='';render()">确认,去生成</button></div>`}
+async function addScene(f){if(!f)return;try{S.scenes.push(await putImg(f));render()}catch(e){alert(e.message)}}
+async function rePrompt(){try{S._wantPrompt=true;S.job=await post(`/api/job/${S.job.id}/prompt`,{version:S.edit});render();poll()}catch(e){alert(e.message)}}
+
+/* ---------- 第五步 ---------- */
+function step4(){const j=S.job,sp=T("splice");
+ return `<div class="card"><h3>前贴视频</h3><div style="display:flex;gap:24px;align-items:flex-start">
+ <div class="video">${j.teaser?`<video src="${j.teaser}" controls></video>`:`<div class="muted" style="margin-bottom:14px">视频生成为模拟</div><button class="btn" onclick="sim()">模拟已生成视频</button>`}</div>
+ <div style="display:flex;flex-direction:column;gap:10px">
+  <div><b>【${esc(S.edit["标题钩子"])}】</b></div><div class="muted">${esc(j.meta.model)} · ${j.meta.seconds} 秒 · 1080×1920 · ${S.subs?"带字幕":"无字幕"} · BGM:${esc(S.bgm)}</div>
+  ${j.teaser?`<a class="btn ghost" href="${j.teaser}&dl=1">下载前贴视频</a>`:""}
+  <button class="btn ghost" onclick="S.step=3;render()">不满意,返回修改</button></div></div></div>
+ ${sp.status=="running"?`<div class="card prog"><span class="spin"></span><b>${esc(sp.stage||"正在拼接")}</b></div>`:""}
+ ${sp.status=="error"?`<div class="card"><div class="err">拼接出错:${esc(sp.error)}</div></div>`:""}
+ ${j.final?`<div class="card"><h3>成片</h3><video src="${j.final}" controls style="width:240px;border-radius:8px"></video><div style="margin-top:10px"><a class="btn" href="${j.final}&dl=1">下载成片</a></div></div>`:""}
+ ${(j.mirrors||[]).length?`<div class="card"><h3>镜像任务</h3>${j.mirrors.map(m=>`<div style="line-height:2.2">${esc(m.lang)} 镜像前贴 · 原片:${esc(m.src)} · <span class="muted">字幕翻译为模拟</span> <a href="${m.url}&dl=1">下载</a></div>`).join("")}</div>`:""}
+ <div class="acts"><button class="btn" ${j.teaser&&sp.status!="running"?"":"disabled"} onclick="splice()">确认成片</button><button class="btn ghost" ${j.teaser?"":"disabled"} onclick="S.mirrorOpen=true;render()">镜像任务</button></div>
+ ${S.mirrorOpen?`<div class="modal"><div class="box"><h3 style="margin:0 0 6px">镜像任务</h3><div class="muted">相同前贴内容,字幕换成其他语言</div>
+ <div class="chk">${["英语","西班牙语","葡萄牙语","日语","韩语","印尼语","泰语","阿拉伯语"].map(l=>`<label><input type="checkbox" value="${l}" class="ml"> ${l}</label>`).join("")}</div>
+ <label class="f">重新选择原片(选填,不选则用当前原片)</label><input type="file" accept="video/*" id="msrc">
+ <div class="acts" style="margin-top:18px"><button class="btn ghost" onclick="S.mirrorOpen=false;render()">取消</button><button class="btn" onclick="mirror()">创建镜像任务</button></div></div></div>`:""}`}
+async function sim(){try{S.job=await post(`/api/job/${S.job.id}/simulate`,{version:S.edit,subtitles:S.subs});render()}catch(e){alert(e.message)}}
+async function splice(){try{S.job=await post(`/api/job/${S.job.id}/splice`);render();poll()}catch(e){alert(e.message)}}
+async function mirror(){const langs=[...document.querySelectorAll(".ml:checked")].map(x=>x.value);if(!langs.length){alert("请至少选择一种语言");return}
+ const f=$("#msrc").files[0];try{S.job=await post(`/api/job/${S.job.id}/mirror`,{langs,src_name:f?f.name:""});S.mirrorOpen=false;render()}catch(e){alert(e.message)}}
+
+/* ---------- 其他页 ---------- */
+function promptPage(){const ks=Object.keys(PROMPTS);pk=pk||ks[0];return `<div style="display:grid;grid-template-columns:200px 1fr;gap:20px"><div class="plist">${ks.map(k=>`<a class="${k==pk?"on":""}" onclick="pk='${k}';render()">${esc(k)}</a>`).join("")}</div><pre>${esc(PROMPTS[pk]||"")}</pre></div>`}
+
+let HIST={origin:[],viral:[]},HIST_OPEN=false,_saveT=null,_saved="";
+async function refreshHist(){try{const m=isV()?"viral":"origin";HIST[m]=await api("/api/jobs?mode="+m);if(STATES[tab])render()}catch(e){}}
+function ago(t){const d=new Date(t*1000),p=n=>String(n).padStart(2,"0");return `${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`}
+function histBar(){const m=isV()?"viral":"origin";return `<div class="histbar"><button class="histbtn" onclick="openHist()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 3 3 9 9 9"/><polyline points="12 7 12 12 15 14"/></svg>创作历史<span class="n">${HIST[m].length}</span></button></div>`}
+async function openHist(){HIST_OPEN=true;await refreshHist();render()}
+function histDrawer(){if(!HIST_OPEN||!STATES[tab])return "";const m=isV()?"viral":"origin",L=HIST[m];
+ return `<div class="modal" style="background:#0003" onclick="HIST_OPEN=false;render()"></div><div class="drawer"><div class="hd"><b>创作历史 · ${isV()?"爆款复刻":"原片理解"}</b><span style="cursor:pointer;color:#6b7280;font-size:18px" onclick="HIST_OPEN=false;render()">×</span></div>
+ <div class="bd">${L.map(x=>`<div class="hi ${S.job&&S.job.id==x.id?"cur":""}" onclick="openJob('${x.id}')"><div style="display:flex;justify-content:space-between;gap:8px"><b style="word-break:break-all">${esc(x.name)}</b><span class="tag ${x.progress=="已出成片"?"g":x.progress=="仅上传"||x.progress=="分析中"?"y":""}" style="white-space:nowrap">${esc(x.progress)}</span></div>
+ ${x.viral?`<div class="muted" style="margin-top:4px">爆款:${esc(x.viral)}</div>`:""}${x.title?`<div style="margin-top:6px;line-height:1.5">【${esc(x.title)}】</div>`:""}
+ <div class="muted" style="margin-top:6px">${ago(x.updated)}${x.model?" · "+esc(x.model)+" · "+x.seconds+"秒":""}${S.job&&S.job.id==x.id?" · 当前任务":""}</div></div>`).join("")||`<div class="muted">还没有历史任务</div>`}</div></div>`}
+async function openJob(id){try{const j=await api("/api/job/"+id),n=mkS(),run=Object.values(j.tasks||{}).some(t=>t.status=="running");
+ n.job=j;n.model=j.meta.model||Object.keys(CFG.models).slice(-1)[0];n.seconds=j.meta.seconds||0;n.title=j.meta.title||"";n.episodes=j.meta.episodes||"第1集";n.tags=j.meta.tags||"";
+ n.analysis=j.analysis;n.roles=j.roles||[];n.hooks=j.hooks||[];n.breakdown=j.breakdown||null;n.creative=j.creative||[];
+ if(j.ui)Object.assign(n,j.ui);else{n.step=j.final||j.teaser?4:n.creative.length?2:(j.analysis||run)?1:0;if(j.confirmed){n.edit=j.confirmed;n.ver=0}}
+ if(n.step>=3&&!n.edit)n.step=n.creative.length?2:1;n.max=Math.max(n.max||0,n.step);
+ const mode=j.meta.mode||(j.meta.viral?"viral":"origin");STATES[mode]=n;tab=mode;S=n;HIST_OPEN=false;_saved="";render();if(run)poll(n)}catch(e){alert(e.message)}}
+function autosave(){if(!S.job||!S.analysis)return;const ui={step:S.step,max:S.max,ver:S.ver,edit:S.edit,bgm:S.bgm,subs:S.subs,scenes:S.scenes};
+ const b={ui,roles:S.roles,hooks:S.hooks};if(S.creative.length)b.creative=S.creative;const k=JSON.stringify(b);if(k==_saved)return;
+ clearTimeout(_saveT);const id=S.job.id;_saveT=setTimeout(()=>post(`/api/job/${id}/save`,b).then(()=>{_saved=k}).catch(()=>{}),1200)}
+function render(){nav();if(STATES[tab])S.max=Math.max(S.max||0,S.step);
+ if(tab=="lib"){$("#page").innerHTML=`<iframe src="/library.html"></iframe>`;return}
+ const body=tab=="prompt"?promptPage():histBar()+steps()+[step0,step1,isV()?step2v:step1,step3,step4][S.step]()+histDrawer();
+ const keep=document.activeElement&&document.activeElement.id;$("#page").innerHTML=`<div class="wrap">${body}</div>`;if(STATES[tab])autosave();
+ const d=$("#drop");if(d){d.ondragover=e=>{e.preventDefault();d.classList.add("drag")};d.ondragleave=()=>d.classList.remove("drag");d.ondrop=e=>{e.preventDefault();d.classList.remove("drag");upload(e.dataTransfer.files[0])}}}
+(async()=>{CFG=await api("/api/config");Object.values(STATES).forEach(s=>s.model=Object.keys(CFG.models).slice(-1)[0]);LIB=await api("/api/library");PROMPTS=await api("/api/prompts");HIST.origin=await api("/api/jobs?mode=origin");HIST.viral=await api("/api/jobs?mode=viral");render()})();
+</script></body></html>

@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""生成线上演示版 index.html(发布到 GitHub Pages)。
+界面与本机版一致;没有后台,所以文字结果用本机版对样例原片真实跑出的结果,视频为模拟。
+只读取本机程序的任务数据,不修改本机程序。"""
+import json, glob, shutil, sys, re
+from pathlib import Path
+
+HERE = Path(__file__).parent
+ROOT = HERE.parent                        # hotspot 仓库根目录
+APP = ROOT.parent / "qiantie_app"
+sys.path.insert(0, str(APP))
+import prompts, pipeline                  # noqa: E402
+from viral_prompt import P_B              # noqa: E402
+
+ASSETS = ROOT / "demo_assets"
+SAMPLES = {
+    "origin": [("cd23ea23928b", "解说素材测试-剧情跳跃2"), ("44c3a84736f6", "高光 Destined to Love")],
+    "viral": [("74bee1fb5cdf", "原片:剧情跳跃3 + 爆款:剧情跳跃1"), ("e9097d1f7a81", "原片:高光 Destined to Love + 爆款:AI前贴")],
+}
+NAMES = {"a.mp4": "解说素材测试-剧情跳跃3.mp4", "viral.mp4": "解说素材测试-剧情跳跃1.mp4", "剧情跳跃2.mp4": "解说素材测试-剧情跳跃2.mp4"}
+
+
+def library():
+    d = json.load(open(sorted(glob.glob(str(ROOT / "data" / "hooks-*.json")))[-1], encoding="utf8"))
+    return {"date": d["date"], "items": [{"id": i, "hook": x["hook"], "title": (x.get("title_cn") or x["title"]).replace("\ufffd", ""),
+            "platform": x["platform"], "highlight": x.get("highlight", ""), "conflict": x.get("conflict", ""),
+            "route": x.get("route", ""), "adapt": x.get("adapt", "")} for i, x in enumerate(d["items"])]}
+
+
+def copy_img(jid, u):
+    if not u:
+        return ""
+    rel = re.sub(r"^/files/[0-9a-f]+/", "", u).split("?")[0]
+    src = APP / "jobs" / jid / rel
+    dst = ASSETS / jid / Path(rel).name
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if src.exists():
+        shutil.copy(src, dst)
+    return f"demo_assets/{jid}/{dst.name}"
+
+
+def job(jid, mode):
+    st = json.loads((APP / "jobs" / jid / "state.json").read_text(encoding="utf8"))
+    m = st["meta"]
+    meta = {k: m.get(k) for k in ("duration", "width", "height", "has_audio", "model", "seconds")}
+    meta.update(name=NAMES.get(m["name"], m["name"]), mode=mode)
+    if m.get("viral"):
+        v = m["viral"]; meta["viral"] = {"name": NAMES.get(v["name"], v["name"]), "duration": v["duration"], "has_audio": v["has_audio"]}
+    roles = [dict(r, img=copy_img(jid, r.get("img"))) for r in st.get("roles", [])]
+    if mode == "viral":
+        creative = [json.loads((HERE / "public_data" / f"rewrite-{jid}.json").read_text(encoding="utf8"))]
+    else:
+        creative = st.get("creative", [])
+    for v in creative:
+        for b in v.get("脚本节拍", []):
+            nums = re.findall(r"\d+(?:\.\d+)?", b.get("时间", ""))
+            b["_start"], b["_end"] = (float(nums[0]), float(nums[1])) if len(nums) >= 2 else (0, 0)
+    teaser = ASSETS / jid / "teaser.mp4"
+    teaser.parent.mkdir(parents=True, exist_ok=True)
+    pipeline.simulate_video(teaser, creative[0].get("标题钩子", ""), creative[0].get("脚本节拍", []), meta["seconds"], True)
+    shutil.rmtree(teaser.parent / "sim", ignore_errors=True)
+    return {"id": jid, "meta": meta, "tasks": {}, "analysis": st["analysis"], "roles": roles, "hooks": st.get("hooks", []),
+            "breakdown": st.get("breakdown"), "creative": creative, "teaser_url": f"demo_assets/{jid}/teaser.mp4", "mirrors": []}
+
+
+def main():
+    shutil.rmtree(ASSETS, ignore_errors=True); ASSETS.mkdir()
+    jobs = {}
+    for mode, L in SAMPLES.items():
+        for jid, _ in L:
+            jobs[jid] = job(jid, mode)
+    demo = {
+        "config": {"models": prompts.MODELS},
+        "library": library(),
+        "prompts": {"P-A 分析原片": prompts.P_A, "P-R 推荐钩子": prompts.P_R, "P-C 生成创作思路": prompts.P_C,
+                    "P-P 视频生成提示词": prompts.P_PROMPT, "P-V 拆解爆款": prompts.P_V, "P-B 爆款仿写(换脸复刻)": P_B},
+        "jobs": jobs,
+        "samples": {m: [{"id": j, "label": lab} for j, lab in L] for m, L in SAMPLES.items()},
+    }
+    html = (HERE / "public_app.html").read_text(encoding="utf8")
+    html = html.replace("__DEMO__", json.dumps(demo, ensure_ascii=False).replace("</", "<\\/"))
+    html = html.replace("<iframe src=\"/library.html\">", "<iframe src=\"library.html\">")
+    (ROOT / "index.html").write_text(html, encoding="utf8")
+    print("ok", {k: len(v) for k, v in SAMPLES.items()}, "钩子", len(demo["library"]["items"]))
+
+
+if __name__ == "__main__":
+    main()
