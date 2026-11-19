@@ -136,7 +136,13 @@ function samplePills(){const L=DEMO.samples[isV()?"viral":"origin"];return `<div
 function secOpts(){const lim=CFG.models[S.model]||15,o=[];for(let s=5;s<lim;s+=5)o.push(s);o.push(lim);if(!o.includes(S.seconds))S.seconds=lim;return o}
 function viralCard(){const v=S.job&&S.job.meta.viral;
  return `<div class="card"><h3>上传爆款视频</h3><div class="up" onclick="alert(DEMO_TIP)">
- ${v?`<b>${esc(v.name)}</b>`:`<b>点击上传爆款视频</b><div class="muted" style="margin-top:6px">不超过 5 分钟 · 在线演示版请在下方选择演示样例</div>`}</div></div>`}
+ ${v?`<b>${esc(v.name)}</b>`:`<b>点击上传爆款视频</b><div class="muted" style="margin-top:6px">不超过 5 分钟 · 在线演示版请在下方选择演示样例</div>`}</div>
+ <div style="display:flex;gap:10px;margin-top:12px;align-items:center"><span class="muted" style="white-space:nowrap">或粘贴视频链接</span>
+ <input type="text" id="vlink" placeholder="粘贴抖音、快手等平台的视频分享链接" value="${esc(S.vlink||"")}" oninput="S.vlink=this.value">
+ <button class="btn ghost" style="white-space:nowrap" onclick="useLink()">解析链接</button></div></div>`}
+function useLink(){const u=(S.vlink||"").trim();if(!u){alert("请先粘贴视频链接");return}
+ if(!/https?:\/\//.test(u)){alert("没有识别到链接,请粘贴含 http 的分享链接");return}
+ alert("在线演示版没有后台,不能下载和解析链接里的视频。请在下方选择演示样例;正式版会自动下载链接里的视频并拆解。")}
 function step0(){const m=S.job&&S.job.meta,ready=m&&(!isV()||m.viral);
  return (isV()?viralCard():"")+`<div class="card"><h3>上传原片</h3>
  <label class="up" id="drop"><input type="file" accept="video/*" hidden onchange="upload(this.files[0])">
