@@ -15,6 +15,9 @@ OUT = Path(__file__).parent / "public_data"; OUT.mkdir(exist_ok=True)
 for jid in sys.argv[1:]:
     st = json.loads((APP / "jobs" / jid / "state.json").read_text(encoding="utf8"))
     a, roles, hooks, meta = st["analysis"], st["roles"], st["hooks"], st["meta"]
+    hf = OUT / f"hooks-{jid}.json"
+    if hf.exists():  # 优先用按主角人设重新挑选的钩子
+        hooks = json.loads(hf.read_text(encoding="utf8"))["hooks"]
     ht = "\n".join(f"钩子{i + 1}:【{h['hook']}】\n  高光时刻:{h.get('highlight', '')}\n  核心冲突:{h.get('conflict', '')}"
                    for i, h in enumerate(hooks))
     p = llm.fill(P_C, 钩子=ht, 一句话剧情=a["一句话剧情"], 原片开头=a["原片开头"],

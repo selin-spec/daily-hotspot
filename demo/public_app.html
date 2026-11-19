@@ -173,7 +173,7 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
   <label class="btn ghost sm" style="text-align:center">更换图片<input type="file" accept="image/*" hidden onchange="roleImg(${i},this.files[0])"></label></div></div>`).join("")}
  ${S.roles.length<lim?`<label class="add" title="添加角色">+<input type="file" accept="image/*" hidden onchange="addRole(this.files[0])"></label>`:""}</div></div>`;
  if(isV())return head+viralBd();
- return head+`<div class="card"><h3>推荐钩子 <span class="muted">来自短剧高光钩子库,必须选满 3 条(已选 ${S.hooks.length}/3)</span></h3><div class="grid3">
+ return head+`<div class="card"><h3>推荐钩子 <span class="muted">来自短剧高光钩子库,只推荐和主角人设对得上的,必须选满 3 条(已选 ${S.hooks.length}/3)</span></h3><div class="grid3">
  ${[0,1,2].map(i=>{const h=S.hooks[i];return h?`<div class="hk"><span class="x" title="删除" onclick="S.hooks.splice(${i},1);render()">×</span>${hkBody(h)}</div>`:`<div class="hk empty">空位:从下方钩子库选择一条</div>`}).join("")}</div>
  <div style="margin-top:12px"><button class="btn ghost sm" onclick="S.showLib=!S.showLib;render()">${S.showLib?"收起钩子库":"加载更多"}</button></div>
  ${S.showLib?`<div class="lib"><h4>全部高光钩子(${LIB.date||""},共 ${LIB.items.length} 条)</h4><input type="text" id="q" placeholder="搜索剧名、高光时刻或核心冲突,模糊匹配" value="${esc(S.q)}" oninput="S.q=this.value;render();const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)">
@@ -186,7 +186,7 @@ function viralBd(){const b=S.breakdown||{};
  <table><tr><th style="width:90px">时间</th><th style="width:100px">作用</th><th>画面要点</th></tr>${(b["结构"]||[]).map(x=>`<tr><td>${esc(x["时间"])}</td><td><span class="tag">${esc(x["作用"])}</span></td><td>${esc(x["画面要点"])}</td></tr>`).join("")}</table></div>
  <div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button><button class="btn" ${S.roles.length?"":"disabled"} onclick="rewrite()">生成爆款仿写</button></div>`}
 async function rewrite(){try{S.max=3;S.creative=[];S.ver=null;S.edit=null;S.step=3;S.job=await post(`/api/job/${S.job.id}/rewrite`,{analysis:S.analysis,roles:S.roles});render();poll()}catch(e){alert(e.message)}}
-function hkBody(h){return `<div class="hb"><b>高光时刻</b>:${esc(h.highlight)}</div><div class="hb" style="margin-top:6px"><b>核心冲突</b>:${esc(h.conflict)}</div>`}
+function hkBody(h){return `<div class="hb"><b>高光时刻</b>:${esc(h.highlight)}</div><div class="hb" style="margin-top:6px"><b>核心冲突</b>:${esc(h.conflict)}</div>${h.reason&&h.reason!="手动选择"?`<div class="hb muted" style="margin-top:6px"><b>人设对应</b>:${esc(h.reason)}</div>`:""}`}
 function pick(id){if(S.hooks.length>=3){alert("推荐钩子最多 3 条,请先删除一条推荐钩子,再选用");return}S.hooks.push({...LIB.items.find(x=>x.id==id),reason:"手动选择"});render()}
 async function putImg(file){if(file.size>3*1024*1024)throw new Error("演示版图片请小于 3MB");return await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error("图片读取失败"));r.readAsDataURL(file)})}
 async function roleImg(i,f){if(!f)return;try{S.roles[i].img=await putImg(f);render()}catch(e){alert(e.message)}}
@@ -195,7 +195,7 @@ async function addRole(f){if(!f)return;try{const u=await putImg(f);const used=ne
 /* ---------- 第三步 ---------- */
 async function creative(auto){try{S.max=1;S.creative=[];S.ver=null;S.step=1;S._hk=JSON.stringify(S.hooks.map(h=>h.id));S.job=await post(`/api/job/${S.job.id}/creative`,{analysis:S.analysis,roles:S.roles,hooks:S.hooks});render();poll()}catch(e){alert(e.message)}}
 function ideas(){const t=T("creative"),changed=S._hk&&S._hk!=JSON.stringify(S.hooks.map(h=>h.id));
- let h=`<div class="card"><h3>创作思路 <span class="muted">每条钩子扩展成一个版本:剧情照钩子走,人物换成原片角色,结尾接原片</span></h3>`;
+ let h=`<div class="card"><h3>创作思路 <span class="muted">钩子按主角人设挑选,讲成主角的前传或身份反差,结尾接上原片</span></h3>`;
  if(t.status=="running")h+=`<div class="prog" style="padding:6px 0"><span class="spin"></span><b>${esc(t.stage||"正在生成")}</b></div>`;
  else if(t.status=="error")h+=`<div class="err">出错了:${esc(t.error)}</div>`;
  else if(!S.creative.length)h+=`<div class="muted">选满 3 条钩子后生成</div>`;
@@ -203,11 +203,11 @@ function ideas(){const t=T("creative"),changed=S._hk&&S._hk!=JSON.stringify(S.ho
  <div class="muted">${esc(v["版本名称"])} · 使用钩子${v["使用钩子"]||i+1}</div>
  <input class="tt" type="text" value="${esc(v["标题钩子"])}" onclick="event.stopPropagation()" oninput="S.creative[${i}]['标题钩子']=this.value">
  ${hk?`<div class="muted" style="line-height:1.6;background:#f7f9fc;border-radius:6px;padding:6px 9px"><b>钩子剧情</b>:${esc(hk.highlight)}</div>`:""}
- ${v["保留的钩子剧情"]?`<div style="font-size:13px;line-height:1.6"><b>扩展剧情</b>:${esc(v["保留的钩子剧情"])}</div>`:""}
+ ${v["前贴定位"]?`<div style="font-size:13px;line-height:1.6"><b>前贴定位</b>:${esc(v["前贴定位"])}</div>`:""}
  <div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
  <div style="line-height:1.65">${esc(v["故事梗概"])}</div>
  ${(v["人物对应"]||[]).length?`<div class="muted" style="line-height:1.9"><b>换脸</b>:${v["人物对应"].map(x=>`${esc(x["钩子人物"])} → ${av(x["原片角色"])}`).join("　")}</div>`:""}
- <div class="muted"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])}):${esc((v["衔接设计"]||{})["前贴结尾状态"])}</div>
+ <div class="muted" style="line-height:1.7"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])})${(v["衔接设计"]||{})["预告旁白"]?`<br>预告旁白:“${esc(v["衔接设计"]["预告旁白"])}”<br>原片首帧兑现:${esc(v["衔接设计"]["原片首帧兑现"])}`:`:${esc((v["衔接设计"]||{})["前贴结尾状态"])}`}</div>
  <div style="display:flex;gap:6px;align-items:center">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div></div>`}).join("")}</div>`;
  h+=`</div><div class="acts">${changed?`<span class="warn">钩子已更换,请重新生成创作思路</span>`:""}<button class="btn ghost" onclick="S.step=0;render()">上一步</button>
  <button class="btn ghost" ${S.hooks.length==3&&t.status!="running"?"":"disabled"} onclick="creative()">${changed?"按新钩子重新生成":"都不满意,重新生成"}</button>
@@ -229,11 +229,11 @@ function step2v(){const p=progress("rewrite","rewrite()");if(p)return p+`<div cl
 /* ---------- 第四步 ---------- */
 function total(){return Math.max(0,...(S.edit["脚本节拍"]||[]).map(b=>{const m=(b["时间"]||"").match(/\d+(\.\d+)?/g);return m?+m[m.length-1]:0}))}
 function rwCard(){const v=S.creative[0];if(!v)return "";
- return `<div class="card"><h3>爆款仿写 <span class="muted">剧情照爆款走,人物换成原片角色,结尾接原片</span></h3><dl class="kv">
+ return `<div class="card"><h3>爆款仿写 <span class="muted">保持爆款剧情,主角换成原片主角,结尾接上原片</span></h3><dl class="kv">
  <dt>保留的爆款剧情</dt><dd>${esc(v["保留的爆款剧情"])}</dd>
  <dt>人物对应</dt><dd>${(v["人物对应"]||[]).map(x=>`爆款里的${esc(x["爆款人物"])} → ${av(x["原片角色"])} ${esc(x["原片角色"])}`).join("　")}</dd>
  <dt>故事梗概</dt><dd>${esc(v["故事梗概"])}</dd><dt>爽点</dt><dd>${esc(v["爽点"])}</dd>
- <dt>与原片衔接</dt><dd>${esc((v["衔接设计"]||{})["衔接方式"])}:${esc((v["衔接设计"]||{})["前贴结尾状态"])}</dd></dl>
+ <dt>前贴定位</dt><dd>${esc(v["前贴定位"]||"")}</dd><dt>与原片衔接</dt><dd>${esc((v["衔接设计"]||{})["衔接方式"])}${(v["衔接设计"]||{})["预告旁白"]?`<br>预告旁白:“${esc(v["衔接设计"]["预告旁白"])}”<br>原片首帧兑现:${esc(v["衔接设计"]["原片首帧兑现"])}`:""}</dd></dl>
  <div class="acts" style="margin-top:12px"><button class="btn ghost sm" onclick="rewrite()">不满意,重新仿写</button></div></div>`}
 function step3(){if(isV()){const p=progress("rewrite","rewrite()");if(p)return p+`<div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
   if(!S.edit)return `<div class="card">尚未生成仿写</div><div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
