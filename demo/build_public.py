@@ -16,7 +16,8 @@ from creative_prompt import P_C            # noqa: E402
 ASSETS = ROOT / "demo_assets"
 SAMPLES = {
     "origin": [("cd23ea23928b", "解说素材测试-剧情跳跃2"), ("44c3a84736f6", "高光 Destined to Love")],
-    "viral": [("74bee1fb5cdf", "原片:剧情跳跃3 + 爆款:剧情跳跃1"), ("e9097d1f7a81", "原片:高光 Destined to Love + 爆款:AI前贴")],
+    # 2026-11-19 对换了两组的爆款视频,测试爆款与原片完全不相关时的效果
+    "viral": [("fa5f07843f15", "原片:剧情跳跃3 + 爆款:AI前贴"), ("2717693739b2", "原片:高光 Destined to Love + 爆款:剧情跳跃1")],
 }
 NAMES = {"a.mp4": "解说素材测试-剧情跳跃3.mp4", "viral.mp4": "解说素材测试-剧情跳跃1.mp4", "剧情跳跃2.mp4": "解说素材测试-剧情跳跃2.mp4"}
 
