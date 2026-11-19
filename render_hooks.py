@@ -39,6 +39,7 @@ main{display:grid;grid-template-columns:repeat(auto-fill,minmax(285px,1fr));gap:
 .cf{font-size:13px;color:#3b4658;line-height:1.6}
 .tags{display:flex;flex-wrap:wrap;gap:6px}.tag{padding:1px 8px;border-radius:10px;font-size:12px;background:#eaf0f8;color:#2E6DB4}
 .高{background:#dff5e3;color:#1b7a36}.中{background:#fff3d6;color:#9a6a00}.低{background:#eee;color:#666}
+.hl{font-size:13px;color:#1f2937;line-height:1.6;background:#fafbfc;border-radius:6px;padding:6px 9px}.hl .tag{margin-left:6px}
 .v30{font-size:12px;color:#33507a;background:#f1f6fd;border-radius:6px;padding:6px 9px}
 .foot{margin-top:auto;font-size:12px;display:flex;justify-content:flex-end}.foot a{color:#2E6DB4;text-decoration:none}
 footer{text-align:center;color:#8a94a3;font-size:12px;padding:20px;line-height:1.7}</style></head><body>
@@ -54,10 +55,11 @@ function bars(title,arr){const m=Math.max(...arr.map(a=>a[1]));return `<div clas
 function draw(){const day=D[$("d").value],it=day.items,st=day.stats,q=$("q").value.trim();
 const cs=["全部",...new Set(it.map(x=>x.route))];
 $("cats").innerHTML=cs.map(c=>`<span class="chip ${c==cat?"on":""}" onclick="cat='${c}';draw()">${c}</span>`).join(" ");
-$("list").innerHTML=it.filter(x=>(cat=="全部"||x.route==cat)&&(!q||x.hook.includes(q)||x.title.includes(q))).map(x=>
+$("list").innerHTML=it.filter(x=>(cat=="全部"||x.route==cat)&&(!q||x.hook.includes(q)||x.title.includes(q)||(x.title_cn||"").includes(q)||x.highlight.includes(q))).map(x=>
 `<div class="card c${x.adapt}"><div class="top"><span>#${x.rank}</span><span class="tag ${x.adapt}">前贴适配度:${x.adapt}</span></div>
 <div class="hook">【${esc(x.hook)}】</div>
-<div><div class="title">《${esc(x.title)}》</div><div class="meta">${esc(x.list)}第${x.list_rank}名 · ${esc(x.heat)} · ${esc(x.genre)}</div></div>
+<div><div class="title">《${esc(x.title_cn||x.title)}》</div><div class="meta">${esc(pl(x))} · ${esc(x.board)}${x.heat?" · "+esc(x.heat):""} · ${esc(x.genre)}</div></div>
+<div class="hl"><b>高光时刻</b>:${esc(x.highlight)}${x.basis=="剧名推断"?'<span class="tag 中">依据剧名推断</span>':""}</div>
 <div class="cf"><b>核心冲突</b>:${esc(x.conflict)}</div>
 <div class="tags"><span class="tag">${esc(x.route)}</span>${x.hook_type.split("/").map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
 <div class="v30"><b>30秒前贴</b>:${esc(x.video30)}</div>
