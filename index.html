@@ -168,7 +168,7 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
  const lim=5,chosen=new Set(S.hooks.map(h=>h.id));
  const lib=LIB.items.filter(x=>!S.q||(x.title+x.hook+x.highlight+x.conflict).toLowerCase().includes(S.q.toLowerCase()));
  const head=`<div class="card"><h3>原片分析 · ${esc(S.job.meta.name)}</h3><dl class="kv">
- <dt>一句话剧情</dt><dd>${esc(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${R(a["原片开头"])}</dd>
+ <dt>剧情概要</dt><dd>${R(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${R(a["原片开头"])}</dd>
  </dl></div>
  <div class="card"><h3>角色与资产图 <span class="muted">单次分析最多 5 个角色,点击图片可放大</span></h3><div class="roles">
  ${S.roles.map((r,i)=>`<div class="rc"><span class="x" title="删除" onclick="S.roles.splice(${i},1);render()">×</span>
