@@ -134,20 +134,18 @@ function samplePills(){const L=DEMO.samples[isV()?"viral":"origin"];return `<div
 function secOpts(){const lim=CFG.models[S.model]||15,o=[];for(let s=5;s<lim;s+=5)o.push(s);o.push(lim);if(!o.includes(S.seconds))S.seconds=lim;return o}
 function viralCard(){const v=S.job&&S.job.meta.viral;
  return `<div class="card"><h3>上传爆款视频</h3><div class="up" onclick="alert(DEMO_TIP)">
- ${v?`<b>${esc(v.name)}</b><div class="muted" style="margin-top:6px">时长 ${fmt(v.duration)} · ${v.has_audio?"有声音":"无声音"}</div>`:`<b>点击上传爆款视频</b><div class="muted" style="margin-top:6px">不超过 5 分钟 · 在线演示版请在下方选择演示样例</div>`}</div></div>`}
+ ${v?`<b>${esc(v.name)}</b>`:`<b>点击上传爆款视频</b><div class="muted" style="margin-top:6px">不超过 5 分钟 · 在线演示版请在下方选择演示样例</div>`}</div></div>`}
 function step0(){const m=S.job&&S.job.meta,ready=m&&(!isV()||m.viral);
  return (isV()?viralCard():"")+`<div class="card"><h3>上传原片</h3>
  <label class="up" id="drop"><input type="file" accept="video/*" hidden onchange="upload(this.files[0])">
- ${m?`<b>${esc(m.name)}</b><div class="muted" style="margin-top:6px">时长 ${fmt(m.duration)} · ${m.width}×${m.height} · ${m.has_audio?"有声音":"无声音"}</div>`:
+ ${m?`<b>${esc(m.name)}</b>`:
    `<b>点击或拖入原片视频</b><div class="muted" style="margin-top:6px">不超过 25 分钟 · mp4 / mov 等常见格式</div>`}
  <div class="muted" style="margin-top:14px">在线演示版请选择演示样例${isV()?"(原片和爆款成对选择)":""}</div>${samplePills()}
  </label>
  <div class="grid3" style="margin-top:18px">
   <div><label class="f">视频模型</label><select onchange="S.model=this.value;S.seconds=0;render()">${Object.entries(CFG.models).map(([k,v])=>`<option value="${k}" ${k==S.model?"selected":""}>${k}(最长 ${v} 秒)</option>`).join("")}</select></div>
   <div><label class="f">前贴时长(由所选模型决定上限)</label><select onchange="S.seconds=+this.value">${secOpts().map(x=>`<option ${x==S.seconds?"selected":""}>${x}</option>`).join("")}</select></div>
-  <div><label class="f">剧名(选填,帮助分析)</label><input type="text" value="${esc(S.title)}" oninput="S.title=this.value"></div></div>
- <div class="grid2" style="margin-top:14px"><div><label class="f">处理的集数</label><input type="text" value="${esc(S.episodes)}" oninput="S.episodes=this.value"></div>
-  <div><label class="f">投放后台标签(选填)</label><input type="text" value="${esc(S.tags)}" placeholder="二创模版、剧ID、素材指派组等" oninput="S.tags=this.value"></div></div></div>
+  <div><label class="f">投放后台标签(选填)</label><input type="text" value="${esc(S.tags)}" placeholder="二创模版、剧ID、素材指派组等" oninput="S.tags=this.value"></div></div>
  <div class="acts"><button class="btn" ${ready?"":"disabled"} onclick="start()">开始分析</button></div>`}
 async function start(){try{S.analysis=null;S.roles=[];S.hooks=[];S.breakdown=null;S.creative=[];S.ver=null;S.edit=null;S.showLib=false;
  S.max=1;_saved="";S.job=await post(`/api/job/${S.job.id}/start`,{model:S.model,seconds:S.seconds,title:S.title,episodes:S.episodes,tags:S.tags,mode:isV()?"viral":""});S.step=1;render();poll()}catch(e){alert(e.message)}}
@@ -163,13 +161,11 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
  const lib=LIB.items.filter(x=>!S.q||(x.title+x.hook+x.highlight+x.conflict).toLowerCase().includes(S.q.toLowerCase()));
  const head=`<div class="card"><h3>原片分析 · ${esc(S.job.meta.name)}</h3><dl class="kv">
  <dt>一句话剧情</dt><dd>${esc(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${esc(a["原片开头"])}</dd>
- <dt>角色人设</dt><dd>${S.roles.map(r=>`<b>${esc(r.code)}</b> ${esc(r.pos)}${r.name&&r.name!="未知"?"("+esc(r.name)+")":""}:${esc(r.persona)}`).join("<br>")||"未识别到角色"}</dd>
- <dt>衔接点</dt><dd>${(a["衔接点"]||[]).map(l=>`${esc(l["方式"])}:${esc(l["说明"])}`).join("<br>")}</dd></dl></div>
+  <dt>衔接点</dt><dd>${(a["衔接点"]||[]).map(l=>`${esc(l["方式"])}:${esc(l["说明"])}`).join("<br>")}</dd></dl></div>
  <div class="card"><h3>角色与资产图 <span class="muted">单次分析最多 5 个角色,点击图片可放大</span></h3><div class="roles">
  ${S.roles.map((r,i)=>`<div class="rc"><span class="x" title="删除" onclick="S.roles.splice(${i},1);render()">×</span>
   <div class="ph" onclick="zoom('${r.img}')">${r.img?`<img src="${r.img}">`:"暂无图片"}</div>
   <div class="ri"><div class="row"><input type="text" value="${esc(r.code)}" title="角色称号" oninput="S.roles[${i}].code=this.value"><input type="text" value="${esc(r.pos)}" placeholder="定位" oninput="S.roles[${i}].pos=this.value"></div>
-  <textarea placeholder="人设" oninput="S.roles[${i}].persona=this.value">${esc(r.persona)}</textarea>
   <label class="btn ghost sm" style="text-align:center">更换图片<input type="file" accept="image/*" hidden onchange="roleImg(${i},this.files[0])"></label></div></div>`).join("")}
  ${S.roles.length<lim?`<label class="add" title="添加角色">+<input type="file" accept="image/*" hidden onchange="addRole(this.files[0])"></label>`:""}</div></div>`;
  if(isV())return head+viralBd();
@@ -183,10 +179,10 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
 function viralBd(){const b=S.breakdown||{};
  return `<div class="card"><h3>爆款拆解 · ${esc(S.job.meta.viral.name)}</h3><dl class="kv" style="margin-bottom:14px">
  <dt>一句话内容</dt><dd>${esc(b["一句话内容"])}</dd><dt>开头钩子</dt><dd>${esc(b["开头钩子"])}</dd><dt>爽点</dt><dd>${esc(b["爽点"])}</dd></dl>
- <table><tr><th style="width:90px">时间</th><th style="width:100px">作用</th><th>画面要点</th></tr>${(b["结构"]||[]).map(x=>`<tr><td>${esc(x["时间"])}</td><td><span class="tag">${esc(x["作用"])}</span></td><td>${esc(x["画面要点"])}</td></tr>`).join("")}</table></div>
+</div>
  <div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button><button class="btn" ${S.roles.length?"":"disabled"} onclick="rewrite()">生成爆款仿写</button></div>`}
 async function rewrite(){try{S.max=3;S.creative=[];S.ver=null;S.edit=null;S.step=3;S.job=await post(`/api/job/${S.job.id}/rewrite`,{analysis:S.analysis,roles:S.roles});render();poll()}catch(e){alert(e.message)}}
-function hkBody(h){return `<div class="hb"><b>高光时刻</b>:${esc(h.highlight)}</div><div class="hb" style="margin-top:6px"><b>核心冲突</b>:${esc(h.conflict)}</div>${h.reason&&h.reason!="手动选择"?`<div class="hb muted" style="margin-top:6px"><b>人设对应</b>:${esc(h.reason)}</div>`:""}`}
+function hkBody(h){return `<div class="hb"><b>高光时刻</b>:${esc(h.highlight)}</div>${h.reason&&h.reason!="手动选择"?`<div class="hb muted" style="margin-top:6px"><b>人设对应</b>:${esc(h.reason)}</div>`:""}`}
 function pick(id){if(S.hooks.length>=3){alert("推荐钩子最多 3 条,请先删除一条推荐钩子,再选用");return}S.hooks.push({...LIB.items.find(x=>x.id==id),reason:"手动选择"});render()}
 async function putImg(file){if(file.size>3*1024*1024)throw new Error("演示版图片请小于 3MB");return await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error("图片读取失败"));r.readAsDataURL(file)})}
 async function roleImg(i,f){if(!f)return;try{S.roles[i].img=await putImg(f);render()}catch(e){alert(e.message)}}
@@ -200,15 +196,10 @@ function ideas(){const t=T("creative"),changed=S._hk&&S._hk!=JSON.stringify(S.ho
  else if(t.status=="error")h+=`<div class="err">出错了:${esc(t.error)}</div>`;
  else if(!S.creative.length)h+=`<div class="muted">选满 3 条钩子后生成</div>`;
  else h+=`<div class="grid3">${S.creative.map((v,i)=>{const hk=S.hooks[(v["使用钩子"]||i+1)-1];return `<div class="ver ${S.ver===i?"on":""}" onclick="S.ver=${i};render()">
- <div class="muted">${esc(v["版本名称"])} · 使用钩子${v["使用钩子"]||i+1}</div>
  <input class="tt" type="text" value="${esc(v["标题钩子"])}" onclick="event.stopPropagation()" oninput="S.creative[${i}]['标题钩子']=this.value">
- ${hk?`<div class="muted" style="line-height:1.6;background:#f7f9fc;border-radius:6px;padding:6px 9px"><b>钩子剧情</b>:${esc(hk.highlight)}</div>`:""}
- ${v["前贴定位"]?`<div style="font-size:13px;line-height:1.6"><b>前贴定位</b>:${esc(v["前贴定位"])}</div>`:""}
  <div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
  <div style="line-height:1.65">${esc(v["故事梗概"])}</div>
- ${(v["人物对应"]||[]).length?`<div class="muted" style="line-height:1.9"><b>换脸</b>:${v["人物对应"].map(x=>`${esc(x["钩子人物"])} → ${av(x["原片角色"])}`).join("　")}</div>`:""}
- <div class="muted" style="line-height:1.7"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])})${(v["衔接设计"]||{})["预告旁白"]?`<br>预告旁白:“${esc(v["衔接设计"]["预告旁白"])}”<br>原片首帧兑现:${esc(v["衔接设计"]["原片首帧兑现"])}`:`:${esc((v["衔接设计"]||{})["前贴结尾状态"])}`}</div>
- <div style="display:flex;gap:6px;align-items:center">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div></div>`}).join("")}</div>`;
+ </div>`}).join("")}</div>`;
  h+=`</div><div class="acts">${changed?`<span class="warn">钩子已更换,请重新生成创作思路</span>`:""}<button class="btn ghost" onclick="S.step=0;render()">上一步</button>
  <button class="btn ghost" ${S.hooks.length==3&&t.status!="running"?"":"disabled"} onclick="creative()">${changed?"按新钩子重新生成":"都不满意,重新生成"}</button>
  <button class="btn" ${S.ver===null||changed||t.status=="running"?"disabled":""} onclick="S.edit=JSON.parse(JSON.stringify(S.creative[S.ver]));S.step=3;render()">选这个版本</button></div>`;
@@ -218,11 +209,10 @@ function step2v(){const p=progress("rewrite","rewrite()");if(p)return p+`<div cl
  return `<div class="card"><div class="muted">爆款仿写 · 剧情照爆款走,人物换成原片角色,结尾接原片</div>
  <input class="tt" type="text" value="${esc(v["标题钩子"])}" style="font-weight:700;font-size:15px;margin:10px 0" oninput="S.creative[0]['标题钩子']=this.value">
  <dl class="kv" style="margin-bottom:10px"><dt>保留的爆款剧情</dt><dd>${esc(v["保留的爆款剧情"])}</dd>
- <dt>人物对应</dt><dd>${(v["人物对应"]||[]).map(x=>`爆款里的${esc(x["爆款人物"])} → ${av(x["原片角色"])} ${esc(x["原片角色"])}`).join("　")}</dd>
  <dt>故事梗概</dt><dd>${esc(v["故事梗概"])}</dd></dl><div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
  <div class="muted" style="margin-top:10px;line-height:1.7"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])}):${esc((v["衔接设计"]||{})["前贴结尾状态"])}<br>${esc((v["衔接设计"]||{})["为什么接得上"])}</div>
  <div style="display:flex;gap:6px;align-items:center;margin:10px 0">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div>
- <table><tr><th style="width:80px">时间</th><th style="width:110px">对应爆款段落</th><th>画面</th><th style="width:28%">台词或旁白</th></tr>${(v["脚本节拍"]||[]).map(b=>`<tr><td>${esc(b["时间"])}</td><td class="muted">${esc(b["对应爆款段落"]||"")}</td><td>${esc(b["画面"])}</td><td>${esc(b["台词或旁白"])}</td></tr>`).join("")}</table></div>
+ <table><tr><th style="width:80px">时间</th><th>画面</th><th style="width:28%">台词或旁白</th></tr>${(v["脚本节拍"]||[]).map(b=>`<tr><td>${esc(b["时间"])}</td><td>${esc(b["画面"])}</td><td>${esc(b["台词或旁白"])}</td></tr>`).join("")}</table></div>
  <div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button><button class="btn ghost" onclick="rewrite()">不满意,重新仿写</button>
  <button class="btn" onclick="S.ver=0;S.edit=JSON.parse(JSON.stringify(S.creative[0]));S.step=3;render()">确认,去调整</button></div>`}
 
@@ -231,7 +221,6 @@ function total(){return Math.max(0,...(S.edit["脚本节拍"]||[]).map(b=>{const
 function rwCard(){const v=S.creative[0];if(!v)return "";
  return `<div class="card"><h3>爆款仿写 <span class="muted">保持爆款剧情,主角换成原片主角,结尾接上原片</span></h3><dl class="kv">
  <dt>保留的爆款剧情</dt><dd>${esc(v["保留的爆款剧情"])}</dd>
- <dt>人物对应</dt><dd>${(v["人物对应"]||[]).map(x=>`爆款里的${esc(x["爆款人物"])} → ${av(x["原片角色"])} ${esc(x["原片角色"])}`).join("　")}</dd>
  <dt>故事梗概</dt><dd>${esc(v["故事梗概"])}</dd><dt>爽点</dt><dd>${esc(v["爽点"])}</dd>
  <dt>前贴定位</dt><dd>${esc(v["前贴定位"]||"")}</dd><dt>与原片衔接</dt><dd>${esc((v["衔接设计"]||{})["衔接方式"])}${(v["衔接设计"]||{})["预告旁白"]?`<br>预告旁白:“${esc(v["衔接设计"]["预告旁白"])}”<br>原片首帧兑现:${esc(v["衔接设计"]["原片首帧兑现"])}`:""}</dd></dl>
  <div class="acts" style="margin-top:12px"><button class="btn ghost sm" onclick="rewrite()">不满意,重新仿写</button></div></div>`}
@@ -248,7 +237,7 @@ function step3body(){const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r
  <div class="grid3" style="margin-top:16px"><div><label class="f">BGM</label><select onchange="S.bgm=this.value">${["紧张悬疑","爽感燃","虐心抒情","轻快","不加BGM"].map(x=>`<option ${x==S.bgm?"selected":""}>${x}</option>`).join("")}</select></div>
  <div><label class="f">是否需要字幕</label><select onchange="S.subs=this.value=='需要'">${["需要","不需要"].map(x=>`<option ${(x=="需要")==S.subs?"selected":""}>${x}</option>`).join("")}</select></div>
  <div><label class="f">分辨率</label><input type="text" value="统一 1080×1920(9:16)" disabled></div></div></div>
- <div class="card"><h3>脚本 <span class="muted">${esc(S.job.meta.model)} · 前贴时长 ${lim} 秒,时间只能在 0 到 ${lim} 秒内修改</span></h3>
+ <div class="card"><h3>脚本</h3>
  <label class="f">标题钩子</label><input type="text" value="${esc(v["标题钩子"])}" oninput="S.edit['标题钩子']=this.value" style="margin-bottom:12px;font-weight:600">
  <table><tr><th style="width:96px">时间</th><th>画面描述</th><th style="width:30%">台词或旁白</th></tr>
  ${(v["脚本节拍"]||[]).map((b,i)=>`<tr><td><input type="text" value="${esc(b["时间"])}" onchange="S.edit['脚本节拍'][${i}]['时间']=this.value;render()"></td>
@@ -265,15 +254,15 @@ async function rePrompt(){try{S._wantPrompt=true;S.job=await post(`/api/job/${S.
 /* ---------- 第五步 ---------- */
 function step4(){const j=S.job,sp=T("splice");
  return `<div class="card"><h3>前贴视频</h3><div style="display:flex;gap:24px;align-items:flex-start">
- <div class="video">${j.teaser?`<video src="${j.teaser}" controls></video>`:`<div class="muted" style="margin-bottom:14px">视频生成为模拟</div><button class="btn" onclick="sim()">模拟已生成视频</button>`}</div>
+ <div class="video">${j.teaser?`<video src="${j.teaser}" controls></video>`:`<button class="btn" onclick="sim()">模拟已生成视频</button>`}</div>
  <div style="display:flex;flex-direction:column;gap:10px">
   <div><b>【${esc(S.edit["标题钩子"])}】</b></div><div class="muted">${esc(j.meta.model)} · ${j.meta.seconds} 秒 · 1080×1920 · ${S.subs?"带字幕":"无字幕"} · BGM:${esc(S.bgm)}</div>
   ${j.teaser?`<a class="btn ghost" href="${j.teaser}&dl=1">下载前贴视频</a>`:""}
   <button class="btn ghost" onclick="S.step=3;render()">不满意,返回修改</button></div></div></div>
  ${sp.status=="running"?`<div class="card prog"><span class="spin"></span><b>${esc(sp.stage||"正在拼接")}</b></div>`:""}
  ${sp.status=="error"?`<div class="card"><div class="err">拼接出错:${esc(sp.error)}</div></div>`:""}
- ${j.final?`<div class="card"><h3>成片</h3><video src="${j.final}" controls style="width:240px;border-radius:8px"></video><div style="margin-top:10px"><a class="btn" href="${j.final}&dl=1">下载成片</a></div></div>`:""}
- ${(j.mirrors||[]).length?`<div class="card"><h3>镜像任务</h3>${j.mirrors.map(m=>`<div style="line-height:2.2">${esc(m.lang)} 镜像前贴 · 原片:${esc(m.src)} · <span class="muted">字幕翻译为模拟</span> <a href="${m.url}&dl=1">下载</a></div>`).join("")}</div>`:""}
+ ${j.final?`<div class="card"><h3>成片</h3><div><a class="btn" href="${j.final}&dl=1">下载成片</a></div></div>`:""}
+ ${(j.mirrors||[]).length?`<div class="card"><h3>镜像任务</h3>${j.mirrors.map(m=>`<div style="line-height:2.2">${esc(m.lang)} 镜像前贴 · 原片:${esc(m.src)} <a href="${m.url}&dl=1">下载</a></div>`).join("")}</div>`:""}
  <div class="acts"><button class="btn" ${j.teaser&&sp.status!="running"?"":"disabled"} onclick="splice()">确认成片</button><button class="btn ghost" ${j.teaser?"":"disabled"} onclick="S.mirrorOpen=true;render()">镜像任务</button></div>
  ${S.mirrorOpen?`<div class="modal"><div class="box"><h3 style="margin:0 0 6px">镜像任务</h3><div class="muted">相同前贴内容,字幕换成其他语言</div>
  <div class="chk">${["英语","西班牙语","葡萄牙语","日语","韩语","印尼语","泰语","阿拉伯语"].map(l=>`<label><input type="checkbox" value="${l}" class="ml"> ${l}</label>`).join("")}</div>
