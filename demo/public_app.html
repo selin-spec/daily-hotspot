@@ -241,9 +241,11 @@ function step3(){if(isV()){const p=progress("rewrite","rewrite()");if(p)return p
 function step3body(){tagEdit();const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r=>(v["出场角色"]||[]).includes(r.code)),t=total();
  return `<div class="card"><h3>脚本</h3>
  <label class="f">标题钩子</label><input type="text" value="${esc(v["标题钩子"])}" oninput="S.edit['标题钩子']=this.value" style="margin-bottom:12px;font-weight:600">
- <table><tr><th style="width:96px">时间</th><th>画面描述</th><th style="width:30%">台词或旁白</th></tr>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span class="muted">共 ${(v["脚本节拍"]||[]).length} 个镜头 · 结束于第 ${t} 秒</span>
+ <button class="btn ghost sm" onclick="S.scriptOpen=!S.scriptOpen;render()">${S.scriptOpen?"收起脚本 ▲":"展开脚本 ▼"}</button></div>
+ ${S.scriptOpen?`<table><tr><th style="width:96px">时间</th><th>画面描述</th><th style="width:30%">台词或旁白</th></tr>
  ${(v["脚本节拍"]||[]).map((b,i)=>`<tr><td><input type="text" value="${esc(b["时间"])}" onchange="S.edit['脚本节拍'][${i}]['时间']=this.value;render()"></td>
- <td><div class="ce" contenteditable="true" oninput="ceIn(this,${i},'画面')" onblur="ceOut(this,${i},'画面')">${hl(b["画面"])}</div></td><td><div class="ce" contenteditable="true" oninput="ceIn(this,${i},'台词或旁白')" onblur="ceOut(this,${i},'台词或旁白')">${hl(b["台词或旁白"])}</div></td></tr>`).join("")}</table>
+ <td><div class="ce" contenteditable="true" oninput="ceIn(this,${i},'画面')" onblur="ceOut(this,${i},'画面')">${hl(b["画面"])}</div></td><td><div class="ce" contenteditable="true" oninput="ceIn(this,${i},'台词或旁白')" onblur="ceOut(this,${i},'台词或旁白')">${hl(b["台词或旁白"])}</div></td></tr>`).join("")}</table>`:""}
  ${t>lim?`<div class="warn" style="margin-top:8px">节拍结束时间 ${t} 秒,超过了模型上限 ${lim} 秒,请调整</div>`:""}
  <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:end"><label class="f" style="margin:0">视频生成提示词</label>
  <button class="btn ghost sm" ${T("prompt").status=="running"?"disabled":""} onclick="rePrompt()">${T("prompt").status=="running"?"正在重写…":"按修改后的脚本重写提示词"}</button></div>
