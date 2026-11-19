@@ -111,7 +111,7 @@ const STATES={origin:mkS(),viral:mkS()};let S=STATES.origin;
 const TABS=[["origin","原片理解"],["viral","爆款复刻"],["lib","短剧高光钩子库"],["prompt","提示词"]];
 const isV=()=>S===STATES.viral;
 function nav(){$("#nav").innerHTML=TABS.map(([k,n])=>`<a class="${k==tab?"on":""}" onclick="tab='${k}';if(STATES[tab])S=STATES[tab];render()">${n}</a>`).join("")}
-function steps(){const n=isV()?[[0,"上传爆款与原片"],[1,"分析原片与爆款"],[3,"生成爆款仿写并调整"],[4,"生成前贴并拼接原片"]]:[[0,"上传原片"],[1,"分析原片并生成创作思路"],[3,"人工确认、调整"],[4,"生成前贴并拼接原片"]];
+function steps(){const n=isV()?[[0,"上传爆款与原片"],[1,"分析并生成爆款仿写"],[3,"人工确认、调整"],[4,"生成前贴并拼接原片"]]:[[0,"上传原片"],[1,"分析原片并生成创作思路"],[3,"人工确认、调整"],[4,"生成前贴并拼接原片"]];
  return `<div class="steps">`+n.map(([i,x],k)=>{const cur=i==S.step||(i==1&&S.step==2&&!isV())||(isV()&&i==3&&S.step==2),done=!cur&&(i<S.step||i<=(S.max||0)),go=!cur&&i<=(S.max||0);
   return `<div class="st ${done?"done":cur?"now":""} ${go?"go":""}" ${go?`onclick="S.step=${i};render()" title="返回查看"`:""}><i>${done?"✓":k+1}</i>${x}</div>`}).join("")+`</div>`}
 function zoom(u){if(u)$("#ov").innerHTML=`<div class="lb" onclick="this.remove()"><img src="${u}"></div>`}
@@ -124,7 +124,8 @@ function poll(st){st=st||S;clearTimeout(st._t);st._t=setTimeout(async()=>{try{st
  if(Object.values(st.job.tasks||{}).some(t=>t.status=="running"))poll(st)},2000)}
 function absorb(st){st=st||S;const j=st.job,t=n=>(j.tasks||{})[n]||{};
  if(t("analyze").status=="done"&&!st.analysis){st.analysis=j.analysis;st.roles=j.roles||[];st.hooks=j.hooks||[];st.breakdown=j.breakdown||null;
-  if(st===STATES.origin&&!t("creative").status&&st.hooks.length==3)setTimeout(()=>{if(S===st)creative(true)},0)}
+  if(st===STATES.origin&&!t("creative").status&&st.hooks.length==3)setTimeout(()=>{if(S===st)creative(true)},0);
+  if(st===STATES.viral&&!t("rewrite").status&&st.roles.length)setTimeout(()=>{if(S===st)rewrite()},0)}
  if((t("creative").status=="done"||t("rewrite").status=="done")&&st.step>=1&&!st.creative.length){st.creative=j.creative||[];if(st===STATES.viral&&st.creative.length){st.ver=0;st.edit=JSON.parse(JSON.stringify(st.creative[0]))}}
  if(t("prompt").status=="done"&&st.edit&&j.new_prompt&&st._wantPrompt){st.edit["视频生成提示词"]=j.new_prompt;st.edit._tagged=false;st._wantPrompt=false}}
 
@@ -184,12 +185,12 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
  <div class="list">${lib.map(x=>`<div class="hk">${hkBody(x)}
  <div style="margin-top:8px">${chosen.has(x.id)?`<span class="tag g">已在推荐中</span>`:`<button class="btn ghost sm" onclick="pick(${x.id})">选用</button>`}</div></div>`).join("")||`<div class="muted">没有匹配的钩子</div>`}</div></div>`:""}</div>
  ${ideas()}`}
-function viralBd(){const b=S.breakdown||{};
- return `<div class="card"><h3>爆款拆解 · ${esc(S.job.meta.viral.name)}</h3><dl class="kv" style="margin-bottom:14px">
- <dt>一句话内容</dt><dd>${esc(b["一句话内容"])}</dd><dt>开头钩子</dt><dd>${esc(b["开头钩子"])}</dd><dt>爽点</dt><dd>${esc(b["爽点"])}</dd></dl>
-</div>
- <div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button><button class="btn" ${S.roles.length?"":"disabled"} onclick="rewrite()">生成爆款仿写</button></div>`}
-async function rewrite(){try{S.max=3;S.creative=[];S.ver=null;S.edit=null;S.step=3;S.job=await post(`/api/job/${S.job.id}/rewrite`,{analysis:S.analysis,roles:S.roles});render();poll()}catch(e){alert(e.message)}}
+function viralBd(){const p=progress("rewrite","rewrite()");
+ if(p)return p+`<div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button></div>`;
+ if(!S.creative.length)return `<div class="card prog"><span class="spin"></span><b>正在生成爆款仿写</b></div>`;
+ return rwCard()+`<div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button>
+ <button class="btn" onclick="if(!S.edit)S.edit=JSON.parse(JSON.stringify(S.creative[0]));S.step=3;render()">确认,去调整</button></div>`}
+async function rewrite(){try{S.max=1;S.creative=[];S.ver=null;S.edit=null;S.step=1;S.job=await post(`/api/job/${S.job.id}/rewrite`,{analysis:S.analysis,roles:S.roles});render();poll()}catch(e){alert(e.message)}}
 function codes(){return (S.roles||[]).map(r=>r.code).filter(c=>/^[A-Z]$/.test(c)).join("")}
 function tagRoles(t){const c=codes();if(!t||!c)return t||"";
  return String(t).replace(new RegExp("人物(["+c+"])(?![A-Za-z])","g"),"@$1").replace(new RegExp("(?<![A-Za-z@图])(["+c+"])(?![A-Za-z])","g"),"@$1")}
@@ -240,9 +241,8 @@ function rwCard(){const v=S.creative[0];if(!v)return "";
  <dt>故事梗概</dt><dd>${R(v["故事梗概"])}</dd><dt>爽点</dt><dd>${R(v["爽点"])}</dd>
  <dt>前贴定位</dt><dd>${esc(v["前贴定位"]||"")}</dd><dt>与原片衔接</dt><dd>${esc((v["衔接设计"]||{})["衔接方式"])}${(v["衔接设计"]||{})["预告旁白"]?`<br>预告旁白:“${esc(v["衔接设计"]["预告旁白"])}”<br>原片首帧兑现:${esc(v["衔接设计"]["原片首帧兑现"])}`:""}</dd></dl>
  <div class="acts" style="margin-top:12px"><button class="btn ghost sm" onclick="rewrite()">不满意,重新仿写</button></div></div>`}
-function step3(){if(isV()){const p=progress("rewrite","rewrite()");if(p)return p+`<div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
-  if(!S.edit)return `<div class="card">尚未生成仿写</div><div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
-  return rwCard()+step3body()}
+function step3(){if(isV()&&!S.edit&&S.creative.length)S.edit=JSON.parse(JSON.stringify(S.creative[0]));
+ if(!S.edit)return `<div class="card">尚未生成</div><div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
  return step3body()}
 function step3body(){tagEdit();const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r=>(v["出场角色"]||[]).includes(r.code)),t=total();
  return `<div class="card"><h3>脚本</h3>
