@@ -11,7 +11,7 @@ sys.path.insert(0, str(APP))
 import llm  # noqa: E402
 from hook_prompt import P_R  # noqa: E402
 
-d = json.load(open(sorted(glob.glob(str(HERE.parent / "data" / "hooks-*.json")))[-1], encoding="utf8"))
+d = json.load(open(HERE.parent / "data" / "master.json", encoding="utf8"))  # 从跨天去重后的总库里挑,不局限当天
 items = [{"id": i, "hook": x["hook"], "title": (x.get("title_cn") or x["title"]).replace("\ufffd", ""), "platform": x["platform"],
           "highlight": x.get("highlight", ""), "conflict": x.get("conflict", ""), "route": x.get("route", ""), "adapt": x.get("adapt", "")}
          for i, x in enumerate(d["items"])]

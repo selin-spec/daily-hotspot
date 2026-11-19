@@ -24,8 +24,8 @@ NAMES = {"a.mp4": "解说素材测试-剧情跳跃3.mp4", "viral.mp4": "解说�
 
 
 def library():
-    d = json.load(open(sorted(glob.glob(str(ROOT / "data" / "hooks-*.json")))[-1], encoding="utf8"))
-    return {"date": d["date"], "items": [{"id": i, "hook": x["hook"], "title": (x.get("title_cn") or x["title"]).replace("\ufffd", ""),
+    d = json.load(open(ROOT / "data" / "master.json", encoding="utf8"))  # 跨天去重后的总库
+    return {"date": d["updated"], "items": [{"id": i, "hook": x["hook"], "title": (x.get("title_cn") or x["title"]).replace("\ufffd", ""),
             "platform": x["platform"], "highlight": x.get("highlight", ""), "conflict": x.get("conflict", ""),
             "route": x.get("route", ""), "adapt": x.get("adapt", "")} for i, x in enumerate(d["items"])]}
 

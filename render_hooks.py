@@ -5,17 +5,24 @@ from pathlib import Path
 from collections import Counter
 
 B = Path(__file__).parent
+# 页面数据来自跨天去重后的总库 data/master.json(由 merge_master.py 生成):
+# "全部"显示总库里所有不重复的剧;每个日期只显示那天新入库的剧。
+master = json.load(open(B / "data" / "master.json", encoding="utf8"))
+views = [("全部", master["items"])]
+for day in sorted({x["first_date"] for x in master["items"]}, reverse=True):
+    views.append((f"{day} 新增", [x for x in master["items"] if x["first_date"] == day]))
 days = {}
-for f in sorted(glob.glob(str(B / "data/hooks-*.json"))):
-    d = json.load(open(f, encoding="utf8"))
-    its = d["items"]
+for name, its in views:
+    order = {"高": 0, "中": 1, "低": 2}
+    its = sorted(its, key=lambda x: (not x.get("on_board", True), order.get(x.get("adapt"), 3)))
+    its = [dict(x, rank=i + 1) for i, x in enumerate(its)]
     stats = {
-        "scanned": d.get("scanned", len(its)), "kept": len(its),
+        "scanned": len(its), "kept": len(its),
         "route": Counter(i["route"] for i in its).most_common(),
         "hook_type": Counter(t for i in its for t in i["hook_type"].split("/")).most_common(6),
         "genre": Counter(i["genre"] for i in its if i["genre"]).most_common(8),
     }
-    days[d["date"]] = {"items": its, "stats": stats}
+    days[name] = {"items": its, "stats": stats}
 
 html = r'''<!doctype html><html lang="zh"><head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>短剧钩子库</title><style>
@@ -48,7 +55,7 @@ footer{text-align:center;color:#8a94a3;font-size:12px;padding:20px;line-height:1
 <div class="wrap"><main id="list"></main></div>
 <footer>数据来源:红果短剧官网公开榜单。剧名与链接归原平台所有,点击“官网查看”可看原剧。</footer>
 <script>const D=__DATA__;let cat="全部";const $=i=>document.getElementById(i);
-const ds=Object.keys(D).sort().reverse();$("d").innerHTML=ds.map(x=>`<option>${x}</option>`).join("");
+const ds=Object.keys(D);$("d").innerHTML=ds.map(x=>`<option value="${x}">${x}(${D[x].items.length} 部)</option>`).join("");
 function pl(x){return x.platform=="红果短剧"?"红果短剧":"海外短剧"}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function bars(title,arr){const m=Math.max(...arr.map(a=>a[1]));return `<div class="box"><h3>${title}</h3>`+arr.map(([k,v])=>`<div class="row"><span>${esc(k)}</span><i style="width:${Math.round(v/m*120)}px"></i><b>${v}</b></div>`).join("")+`</div>`}
@@ -56,7 +63,7 @@ function draw(){const day=D[$("d").value],it=day.items,st=day.stats,q=$("q").val
 const cs=["全部",...new Set(it.map(x=>x.route))];
 $("cats").innerHTML=cs.map(c=>`<span class="chip ${c==cat?"on":""}" onclick="cat='${c}';draw()">${c}</span>`).join(" ");
 $("list").innerHTML=it.filter(x=>(cat=="全部"||x.route==cat)&&(!q||x.hook.includes(q)||x.title.includes(q)||(x.title_cn||"").includes(q)||x.highlight.includes(q))).map(x=>
-`<div class="card c${x.adapt}"><div class="top"><span>#${x.rank}</span><span class="tag ${x.adapt}">前贴适配度:${x.adapt}</span></div>
+`<div class="card c${x.adapt}"><div class="top"><span>#${x.rank} · ${x.first_date.slice(5)} 入库${x.on_board===false?' · <span class="tag 低">已下榜</span>':""}</span><span class="tag ${x.adapt}">前贴适配度:${x.adapt}</span></div>
 <div class="hook">【${esc(x.hook)}】</div>
 <div><div class="title">《${esc(x.title_cn||x.title)}》</div><div class="meta">${esc(pl(x))} · ${esc(x.board)}${x.heat?" · "+esc(x.heat):""} · ${esc(x.genre)}</div></div>
 <div class="hl"><b>高光时刻</b>:${esc(x.highlight)}${x.basis=="剧名推断"?'<span class="tag 中">依据剧名推断</span>':""}</div>

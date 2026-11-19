@@ -169,7 +169,7 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
  const lib=LIB.items.filter(x=>!S.q||(x.title+x.hook+x.highlight+x.conflict).toLowerCase().includes(S.q.toLowerCase()));
  const head=`<div class="card"><h3>原片分析 · ${esc(S.job.meta.name)}</h3><dl class="kv">
  <dt>一句话剧情</dt><dd>${esc(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${R(a["原片开头"])}</dd>
-  <dt>衔接点</dt><dd>${(a["衔接点"]||[]).map(l=>`${esc(l["方式"])}:${R(l["说明"])}`).join("<br>")}</dd></dl></div>
+ </dl></div>
  <div class="card"><h3>角色与资产图 <span class="muted">单次分析最多 5 个角色,点击图片可放大</span></h3><div class="roles">
  ${S.roles.map((r,i)=>`<div class="rc"><span class="x" title="删除" onclick="S.roles.splice(${i},1);render()">×</span>
   <div class="ph" onclick="zoom('${r.img}')">${r.img?`<img src="${r.img}">`:"暂无图片"}</div>
@@ -180,7 +180,7 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
  return head+`<div class="card"><h3>推荐钩子 <span class="muted">来自短剧高光钩子库,只推荐和主角人设对得上的,必须选满 3 条(已选 ${S.hooks.length}/3)</span></h3><div class="grid3">
  ${[0,1,2].map(i=>{const h=S.hooks[i];return h?`<div class="hk"><span class="x" title="删除" onclick="S.hooks.splice(${i},1);render()">×</span>${hkBody(h)}</div>`:`<div class="hk empty">空位:从下方钩子库选择一条</div>`}).join("")}</div>
  <div style="margin-top:12px"><button class="btn ghost sm" onclick="S.showLib=!S.showLib;render()">${S.showLib?"收起钩子库":"加载更多"}</button></div>
- ${S.showLib?`<div class="lib"><h4>全部高光钩子(${LIB.date||""},共 ${LIB.items.length} 条)</h4><input type="text" id="q" placeholder="搜索剧名、高光时刻或核心冲突,模糊匹配" value="${esc(S.q)}" oninput="S.q=this.value;render();const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)">
+ ${S.showLib?`<div class="lib"><h4>全部高光钩子(总库不重复,截至 ${LIB.date||""},共 ${LIB.items.length} 条)</h4><input type="text" id="q" placeholder="搜索剧名、高光时刻或核心冲突,模糊匹配" value="${esc(S.q)}" oninput="S.q=this.value;render();const q=$('#q');q.focus();q.setSelectionRange(q.value.length,q.value.length)">
  <div class="list">${lib.map(x=>`<div class="hk">${hkBody(x)}
  <div style="margin-top:8px">${chosen.has(x.id)?`<span class="tag g">已在推荐中</span>`:`<button class="btn ghost sm" onclick="pick(${x.id})">选用</button>`}</div></div>`).join("")||`<div class="muted">没有匹配的钩子</div>`}</div></div>`:""}</div>
  ${ideas()}`}
