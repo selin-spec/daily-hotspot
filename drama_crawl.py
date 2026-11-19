@@ -26,7 +26,7 @@ HONGGUO_RANKS = [("真人剧", "/rank/hot-real-drama"), ("AI剧", "/rank/hot-ai-
 
 def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"})
-    return urllib.request.urlopen(req, timeout=25).read().decode("utf8", "ignore")
+    return urllib.request.urlopen(req, timeout=25).read().decode("utf8", "ignore").replace("\ufffd", "")
 
 
 def meta(t, *names):
