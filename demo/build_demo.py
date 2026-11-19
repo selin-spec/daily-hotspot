@@ -18,7 +18,7 @@ for i, (k, m) in enumerate(marks):
     b = txt.index(marks[i + 1][1]) if i + 1 < len(marks) else len(txt)
     prompts[k] = txt[a:b].strip()
 prompts["P-B"] = PROMPT_VIRAL.strip()
-names = {"P-A": "分析原片", "P-H": "钩子库·整理入库", "P-R": "推荐钩子", "P-C": "生成创作思路", "P-B": "爆款拆解与仿写"}
+names = {"P-A": "分析原片", "P-H": "钩子库·提取高光钩子", "P-R": "推荐钩子", "P-C": "生成创作思路", "P-B": "爆款拆解与仿写"}
 
 DATA = {"samples": SAMPLES, "colors": ROLE_COLORS, "prompts": prompts, "pnames": names}
 
