@@ -11,14 +11,14 @@ PROMPT_FILE = ROOT.parent / "AI前贴_整合版提示词_第三版.txt"
 
 # 从方案文档的提示词文件里按标题切出各提示词
 txt = PROMPT_FILE.read_text(encoding="utf8")
-marks = [("P-A", "一、P-A"), ("P-H1", "二、P-H1"), ("P-H2", "三、P-H2"), ("P-R", "四、P-R"), ("P-C", "五、P-C")]
+marks = [("P-A", "一、P-A"), ("P-H", "二、P-H"), ("P-R", "三、P-R"), ("P-C", "四、P-C")]
 prompts = {}
 for i, (k, m) in enumerate(marks):
     a = txt.index(m)
     b = txt.index(marks[i + 1][1]) if i + 1 < len(marks) else len(txt)
     prompts[k] = txt[a:b].strip()
 prompts["P-B"] = PROMPT_VIRAL.strip()
-names = {"P-A": "分析原片", "P-H1": "钩子库·单条整理", "P-H2": "钩子库·合并判断", "P-R": "推荐钩子", "P-C": "生成创作思路", "P-B": "爆款拆解与仿写"}
+names = {"P-A": "分析原片", "P-H": "钩子库·整理入库", "P-R": "推荐钩子", "P-C": "生成创作思路", "P-B": "爆款拆解与仿写"}
 
 DATA = {"samples": SAMPLES, "colors": ROLE_COLORS, "prompts": prompts, "pnames": names}
 
