@@ -63,6 +63,8 @@ iframe{width:100%;height:calc(100vh - 60px);border:0}
 .drawer .hd{display:flex;justify-content:space-between;align-items:center;padding:18px 20px;border-bottom:1px solid #eef0f4}.drawer .bd{overflow:auto;padding:14px 20px;flex:1}
 .hi{border:1px solid #eef0f4;border-radius:9px;padding:12px 14px;margin-bottom:10px;cursor:pointer}.hi:hover{border-color:#2E6DB4}.hi.cur{border-color:#2E6DB4;background:#f7fbff}
 .pill{padding:6px 14px;border:1px solid #d9dee7;border-radius:16px;cursor:pointer;font-size:13px;background:#fff;color:#1f2937}.pill.on{border-color:#2E6DB4;color:#2E6DB4;background:#f0f6fe;font-weight:600}
+.rt{color:#7c3aed;background:#f3e8ff;border-radius:4px;padding:0 3px;font-weight:600}
+.ce{min-height:52px;padding:8px 10px;border:1px solid #d9dee7;border-radius:6px;line-height:1.65;font-size:13px;white-space:pre-wrap;outline:none;background:#fff}.ce:focus{border-color:#2E6DB4}
 .chk{display:flex;flex-wrap:wrap;gap:10px 18px;margin:8px 0 16px}
 </style></head><body>
 <div class="top"><div class="logo">AI前贴</div><div class="nav" id="nav"></div></div>
@@ -124,7 +126,7 @@ function absorb(st){st=st||S;const j=st.job,t=n=>(j.tasks||{})[n]||{};
  if(t("analyze").status=="done"&&!st.analysis){st.analysis=j.analysis;st.roles=j.roles||[];st.hooks=j.hooks||[];st.breakdown=j.breakdown||null;
   if(st===STATES.origin&&!t("creative").status&&st.hooks.length==3)setTimeout(()=>{if(S===st)creative(true)},0)}
  if((t("creative").status=="done"||t("rewrite").status=="done")&&st.step>=1&&!st.creative.length){st.creative=j.creative||[];if(st===STATES.viral&&st.creative.length){st.ver=0;st.edit=JSON.parse(JSON.stringify(st.creative[0]))}}
- if(t("prompt").status=="done"&&st.edit&&j.new_prompt&&st._wantPrompt){st.edit["视频生成提示词"]=j.new_prompt;st._wantPrompt=false}}
+ if(t("prompt").status=="done"&&st.edit&&j.new_prompt&&st._wantPrompt){st.edit["视频生成提示词"]=j.new_prompt;st.edit._tagged=false;st._wantPrompt=false}}
 
 /* ---------- 第一步 ---------- */
 const DEMO_TIP="在线演示版没有后台,不能分析新上传的视频。请选择下方的演示样例(结果来自本机版真实运行);分析自己的视频请使用本机版。";
@@ -160,8 +162,8 @@ function step1(){const p=progress("analyze","start()");if(p)return p+`<div class
  const lim=5,chosen=new Set(S.hooks.map(h=>h.id));
  const lib=LIB.items.filter(x=>!S.q||(x.title+x.hook+x.highlight+x.conflict).toLowerCase().includes(S.q.toLowerCase()));
  const head=`<div class="card"><h3>原片分析 · ${esc(S.job.meta.name)}</h3><dl class="kv">
- <dt>一句话剧情</dt><dd>${esc(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${esc(a["原片开头"])}</dd>
-  <dt>衔接点</dt><dd>${(a["衔接点"]||[]).map(l=>`${esc(l["方式"])}:${esc(l["说明"])}`).join("<br>")}</dd></dl></div>
+ <dt>一句话剧情</dt><dd>${esc(a["一句话剧情"])}</dd><dt>原片开头</dt><dd>${R(a["原片开头"])}</dd>
+  <dt>衔接点</dt><dd>${(a["衔接点"]||[]).map(l=>`${esc(l["方式"])}:${R(l["说明"])}`).join("<br>")}</dd></dl></div>
  <div class="card"><h3>角色与资产图 <span class="muted">单次分析最多 5 个角色,点击图片可放大</span></h3><div class="roles">
  ${S.roles.map((r,i)=>`<div class="rc"><span class="x" title="删除" onclick="S.roles.splice(${i},1);render()">×</span>
   <div class="ph" onclick="zoom('${r.img}')">${r.img?`<img src="${r.img}">`:"暂无图片"}</div>
@@ -182,6 +184,14 @@ function viralBd(){const b=S.breakdown||{};
 </div>
  <div class="acts"><button class="btn ghost" onclick="S.step=0;render()">上一步</button><button class="btn" ${S.roles.length?"":"disabled"} onclick="rewrite()">生成爆款仿写</button></div>`}
 async function rewrite(){try{S.max=3;S.creative=[];S.ver=null;S.edit=null;S.step=3;S.job=await post(`/api/job/${S.job.id}/rewrite`,{analysis:S.analysis,roles:S.roles});render();poll()}catch(e){alert(e.message)}}
+function codes(){return (S.roles||[]).map(r=>r.code).filter(c=>/^[A-Z]$/.test(c)).join("")}
+function tagRoles(t){const c=codes();if(!t||!c)return t||"";
+ return String(t).replace(new RegExp("人物(["+c+"])(?![A-Za-z])","g"),"@$1").replace(new RegExp("(?<![A-Za-z@图])(["+c+"])(?![A-Za-z])","g"),"@$1")}
+function hl(t){return esc(t).replace(/@([A-Z])(?![A-Za-z])/g,'<span class="rt">@$1</span>')}
+function R(t){return hl(tagRoles(t))}
+function ceIn(el,i,k){const v=tagRoles(el.innerText);if(i<0)S.edit[k]=v;else S.edit["脚本节拍"][i][k]=v}
+function ceOut(el,i,k){el.innerHTML=hl(i<0?S.edit[k]:S.edit["脚本节拍"][i][k])}
+function tagEdit(){const v=S.edit;if(!v||v._tagged)return;(v["脚本节拍"]||[]).forEach(b=>{b["画面"]=tagRoles(b["画面"]);b["台词或旁白"]=tagRoles(b["台词或旁白"])});v["视频生成提示词"]=tagRoles(v["视频生成提示词"]);v._tagged=true}
 function hkBody(h){return `<div class="hb"><b>高光时刻</b>:${esc(h.highlight)}</div>${h.reason&&h.reason!="手动选择"?`<div class="hb muted" style="margin-top:6px"><b>人设对应</b>:${esc(h.reason)}</div>`:""}`}
 function pick(id){if(S.hooks.length>=3){alert("推荐钩子最多 3 条,请先删除一条推荐钩子,再选用");return}S.hooks.push({...LIB.items.find(x=>x.id==id),reason:"手动选择"});render()}
 async function putImg(file){if(file.size>3*1024*1024)throw new Error("演示版图片请小于 3MB");return await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error("图片读取失败"));r.readAsDataURL(file)})}
@@ -197,8 +207,8 @@ function ideas(){const t=T("creative"),changed=S._hk&&S._hk!=JSON.stringify(S.ho
  else if(!S.creative.length)h+=`<div class="muted">选满 3 条钩子后生成</div>`;
  else h+=`<div class="grid3">${S.creative.map((v,i)=>{const hk=S.hooks[(v["使用钩子"]||i+1)-1];return `<div class="ver ${S.ver===i?"on":""}" onclick="S.ver=${i};render()">
  <input class="tt" type="text" value="${esc(v["标题钩子"])}" onclick="event.stopPropagation()" oninput="S.creative[${i}]['标题钩子']=this.value">
- <div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
- <div style="line-height:1.65">${esc(v["故事梗概"])}</div>
+ <div class="shuang"><b>爽点</b>:${R(v["爽点"])}</div>
+ <div style="line-height:1.65">${R(v["故事梗概"])}</div>
  </div>`}).join("")}</div>`;
  h+=`</div><div class="acts">${changed?`<span class="warn">钩子已更换,请重新生成创作思路</span>`:""}<button class="btn ghost" onclick="S.step=0;render()">上一步</button>
  <button class="btn ghost" ${S.hooks.length==3&&t.status!="running"?"":"disabled"} onclick="creative()">${changed?"按新钩子重新生成":"都不满意,重新生成"}</button>
@@ -208,8 +218,8 @@ function step2v(){const p=progress("rewrite","rewrite()");if(p)return p+`<div cl
  const v=S.creative[0];if(!v)return `<div class="card">尚未生成</div>`;
  return `<div class="card"><div class="muted">爆款仿写 · 剧情照爆款走,人物换成原片角色,结尾接原片</div>
  <input class="tt" type="text" value="${esc(v["标题钩子"])}" style="font-weight:700;font-size:15px;margin:10px 0" oninput="S.creative[0]['标题钩子']=this.value">
- <dl class="kv" style="margin-bottom:10px"><dt>保留的爆款剧情</dt><dd>${esc(v["保留的爆款剧情"])}</dd>
- <dt>故事梗概</dt><dd>${esc(v["故事梗概"])}</dd></dl><div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
+ <dl class="kv" style="margin-bottom:10px"><dt>保留的爆款剧情</dt><dd>${R(v["保留的爆款剧情"])}</dd>
+ <dt>故事梗概</dt><dd>${R(v["故事梗概"])}</dd></dl><div class="shuang"><b>爽点</b>:${R(v["爽点"])}</div>
  <div class="muted" style="margin-top:10px;line-height:1.7"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])}):${esc((v["衔接设计"]||{})["前贴结尾状态"])}<br>${esc((v["衔接设计"]||{})["为什么接得上"])}</div>
  <div style="display:flex;gap:6px;align-items:center;margin:10px 0">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div>
  <table><tr><th style="width:80px">时间</th><th>画面</th><th style="width:28%">台词或旁白</th></tr>${(v["脚本节拍"]||[]).map(b=>`<tr><td>${esc(b["时间"])}</td><td>${esc(b["画面"])}</td><td>${esc(b["台词或旁白"])}</td></tr>`).join("")}</table></div>
@@ -220,16 +230,26 @@ function step2v(){const p=progress("rewrite","rewrite()");if(p)return p+`<div cl
 function total(){return Math.max(0,...(S.edit["脚本节拍"]||[]).map(b=>{const m=(b["时间"]||"").match(/\d+(\.\d+)?/g);return m?+m[m.length-1]:0}))}
 function rwCard(){const v=S.creative[0];if(!v)return "";
  return `<div class="card"><h3>爆款仿写 <span class="muted">保持爆款剧情,主角换成原片主角,结尾接上原片</span></h3><dl class="kv">
- <dt>保留的爆款剧情</dt><dd>${esc(v["保留的爆款剧情"])}</dd>
- <dt>故事梗概</dt><dd>${esc(v["故事梗概"])}</dd><dt>爽点</dt><dd>${esc(v["爽点"])}</dd>
+ <dt>保留的爆款剧情</dt><dd>${R(v["保留的爆款剧情"])}</dd>
+ <dt>故事梗概</dt><dd>${R(v["故事梗概"])}</dd><dt>爽点</dt><dd>${R(v["爽点"])}</dd>
  <dt>前贴定位</dt><dd>${esc(v["前贴定位"]||"")}</dd><dt>与原片衔接</dt><dd>${esc((v["衔接设计"]||{})["衔接方式"])}${(v["衔接设计"]||{})["预告旁白"]?`<br>预告旁白:“${esc(v["衔接设计"]["预告旁白"])}”<br>原片首帧兑现:${esc(v["衔接设计"]["原片首帧兑现"])}`:""}</dd></dl>
  <div class="acts" style="margin-top:12px"><button class="btn ghost sm" onclick="rewrite()">不满意,重新仿写</button></div></div>`}
 function step3(){if(isV()){const p=progress("rewrite","rewrite()");if(p)return p+`<div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
   if(!S.edit)return `<div class="card">尚未生成仿写</div><div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button></div>`;
   return rwCard()+step3body()}
  return step3body()}
-function step3body(){const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r=>(v["出场角色"]||[]).includes(r.code)),t=total();
- return `<div class="card"><h3>资产图与参数</h3><div class="thumbs">
+function step3body(){tagEdit();const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r=>(v["出场角色"]||[]).includes(r.code)),t=total();
+ return `<div class="card"><h3>脚本</h3>
+ <label class="f">标题钩子</label><input type="text" value="${esc(v["标题钩子"])}" oninput="S.edit['标题钩子']=this.value" style="margin-bottom:12px;font-weight:600">
+ <table><tr><th style="width:96px">时间</th><th>画面描述</th><th style="width:30%">台词或旁白</th></tr>
+ ${(v["脚本节拍"]||[]).map((b,i)=>`<tr><td><input type="text" value="${esc(b["时间"])}" onchange="S.edit['脚本节拍'][${i}]['时间']=this.value;render()"></td>
+ <td><div class="ce" contenteditable="true" oninput="ceIn(this,${i},'画面')" onblur="ceOut(this,${i},'画面')">${hl(b["画面"])}</div></td><td><div class="ce" contenteditable="true" oninput="ceIn(this,${i},'台词或旁白')" onblur="ceOut(this,${i},'台词或旁白')">${hl(b["台词或旁白"])}</div></td></tr>`).join("")}</table>
+ ${t>lim?`<div class="warn" style="margin-top:8px">节拍结束时间 ${t} 秒,超过了模型上限 ${lim} 秒,请调整</div>`:""}
+ <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:end"><label class="f" style="margin:0">视频生成提示词</label>
+ <button class="btn ghost sm" ${T("prompt").status=="running"?"disabled":""} onclick="rePrompt()">${T("prompt").status=="running"?"正在重写…":"按修改后的脚本重写提示词"}</button></div>
+ <div class="ce" contenteditable="true" style="min-height:200px;margin-top:6px" oninput="ceIn(this,-1,'视频生成提示词')" onblur="ceOut(this,-1,'视频生成提示词')">${hl(v["视频生成提示词"])}</div>
+ ${T("prompt").status=="error"?`<div class="err" style="margin-top:8px">${esc(T("prompt").error)}</div>`:""}</div>
+<div class="card"><h3>资产图与参数</h3><div class="thumbs">
  ${cast.map(r=>`<div class="thumb">${r.img?`<img src="${r.img}" onclick="zoom('${r.img}')">`:`<span class="ph2"></span>`}<div class="muted" style="margin-top:4px">${esc(r.code)} ${esc(r.pos)}</div>
   <label class="muted" style="color:#2E6DB4;cursor:pointer">更换<input type="file" accept="image/*" hidden onchange="roleImg(${S.roles.indexOf(r)},this.files[0])"></label></div>`).join("")}
  ${S.scenes.map(u=>`<div class="thumb"><img src="${u}" onclick="zoom('${u}')"><div class="muted" style="margin-top:4px">场景图</div></div>`).join("")}
@@ -237,16 +257,6 @@ function step3body(){const v=S.edit,lim=S.job.meta.seconds,cast=S.roles.filter(r
  <div class="grid3" style="margin-top:16px"><div><label class="f">BGM</label><select onchange="S.bgm=this.value">${["紧张悬疑","爽感燃","虐心抒情","轻快","不加BGM"].map(x=>`<option ${x==S.bgm?"selected":""}>${x}</option>`).join("")}</select></div>
  <div><label class="f">是否需要字幕</label><select onchange="S.subs=this.value=='需要'">${["需要","不需要"].map(x=>`<option ${(x=="需要")==S.subs?"selected":""}>${x}</option>`).join("")}</select></div>
  <div><label class="f">分辨率</label><input type="text" value="统一 1080×1920(9:16)" disabled></div></div></div>
- <div class="card"><h3>脚本</h3>
- <label class="f">标题钩子</label><input type="text" value="${esc(v["标题钩子"])}" oninput="S.edit['标题钩子']=this.value" style="margin-bottom:12px;font-weight:600">
- <table><tr><th style="width:96px">时间</th><th>画面描述</th><th style="width:30%">台词或旁白</th></tr>
- ${(v["脚本节拍"]||[]).map((b,i)=>`<tr><td><input type="text" value="${esc(b["时间"])}" onchange="S.edit['脚本节拍'][${i}]['时间']=this.value;render()"></td>
- <td><textarea oninput="S.edit['脚本节拍'][${i}]['画面']=this.value">${esc(b["画面"])}</textarea></td><td><textarea oninput="S.edit['脚本节拍'][${i}]['台词或旁白']=this.value">${esc(b["台词或旁白"])}</textarea></td></tr>`).join("")}</table>
- ${t>lim?`<div class="warn" style="margin-top:8px">节拍结束时间 ${t} 秒,超过了模型上限 ${lim} 秒,请调整</div>`:""}
- <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:end"><label class="f" style="margin:0">视频生成提示词</label>
- <button class="btn ghost sm" ${T("prompt").status=="running"?"disabled":""} onclick="rePrompt()">${T("prompt").status=="running"?"正在重写…":"按修改后的脚本重写提示词"}</button></div>
- <textarea style="min-height:200px;margin-top:6px" oninput="S.edit['视频生成提示词']=this.value">${esc(v["视频生成提示词"])}</textarea>
- ${T("prompt").status=="error"?`<div class="err" style="margin-top:8px">${esc(T("prompt").error)}</div>`:""}</div>
  <div class="acts"><button class="btn ghost" onclick="S.step=1;render()">上一步</button><button class="btn" ${t>lim?"disabled":""} onclick="S.step=4;S.job.teaser='';render()">确认,去生成</button></div>`}
 async function addScene(f){if(!f)return;try{S.scenes.push(await putImg(f));render()}catch(e){alert(e.message)}}
 async function rePrompt(){try{S._wantPrompt=true;S.job=await post(`/api/job/${S.job.id}/prompt`,{version:S.edit});render();poll()}catch(e){alert(e.message)}}
