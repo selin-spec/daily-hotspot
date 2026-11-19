@@ -13,6 +13,7 @@ import prompts, pipeline                  # noqa: E402
 from viral_prompt import P_B              # noqa: E402
 from creative_prompt import P_C            # noqa: E402
 from hook_prompt import P_R                # noqa: E402
+from prompts_v4 import PAGE                # noqa: E402
 
 ASSETS = ROOT / "demo_assets"
 SAMPLES = {
@@ -79,8 +80,7 @@ def main():
     demo = {
         "config": {"models": prompts.MODELS},
         "library": library(),
-        "prompts": {"P-A 分析原片": prompts.P_A, "P-R 推荐钩子(按主角人设)": P_R, "P-C 生成创作思路(主角前传+衔接)": P_C,
-                    "P-P 视频生成提示词": prompts.P_PROMPT, "P-V 拆解爆款": prompts.P_V, "P-B 爆款仿写(保持爆款+衔接原片)": P_B},
+        "prompts": dict(PAGE),
         "jobs": jobs,
         "samples": {m: [{"id": j, "label": lab} for j, lab in L] for m, L in SAMPLES.items()},
     }

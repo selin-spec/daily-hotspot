@@ -292,7 +292,10 @@ async function mirror(){const langs=[...document.querySelectorAll(".ml:checked")
  const f=$("#msrc").files[0];try{S.job=await post(`/api/job/${S.job.id}/mirror`,{langs,src_name:f?f.name:""});S.mirrorOpen=false;render()}catch(e){alert(e.message)}}
 
 /* ---------- 其他页 ---------- */
-function promptPage(){const ks=Object.keys(PROMPTS);pk=pk||ks[0];return `<div style="display:grid;grid-template-columns:200px 1fr;gap:20px"><div class="plist">${ks.map(k=>`<a class="${k==pk?"on":""}" onclick="pk='${k}';render()">${esc(k)}</a>`).join("")}</div><pre>${esc(PROMPTS[pk]||"")}</pre></div>`}
+function promptPage(){const ks=Object.keys(PROMPTS);pk=pk||ks[0];let g="";
+ const list=ks.map(k=>{const [grp,name]=k.split("|");const h=grp!=g?`<div style="margin:${g?"16px":"0"} 0 6px;padding:0 12px;font-size:12.5px;color:#6b7280;font-weight:600">${esc(grp)}</div>`:"";g=grp;
+  return h+`<a class="${k==pk?"on":""}" onclick="pk='${k.replace(/'/g,"\\'")}';render()">${esc(name||k)}</a>`}).join("");
+ return `<div style="display:grid;grid-template-columns:230px 1fr;gap:20px"><div class="plist">${list}</div><pre style="max-height:none">${esc(PROMPTS[pk]||"")}</pre></div>`}
 
 let HIST={origin:[],viral:[]},HIST_OPEN=false,_saveT=null,_saved="";
 async function refreshHist(){try{const m=isV()?"viral":"origin";HIST[m]=await api("/api/jobs?mode="+m);if(STATES[tab])render()}catch(e){}}
