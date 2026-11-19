@@ -11,6 +11,7 @@ APP = ROOT.parent / "qiantie_app"
 sys.path.insert(0, str(APP))
 import prompts, pipeline                  # noqa: E402
 from viral_prompt import P_B              # noqa: E402
+from creative_prompt import P_C            # noqa: E402
 
 ASSETS = ROOT / "demo_assets"
 SAMPLES = {
@@ -50,7 +51,11 @@ def job(jid, mode):
     if mode == "viral":
         creative = [json.loads((HERE / "public_data" / f"rewrite-{jid}.json").read_text(encoding="utf8"))]
     else:
-        creative = st.get("creative", [])
+        cf = HERE / "public_data" / f"creative-{jid}.json"
+        if cf.exists():
+            cd = json.loads(cf.read_text(encoding="utf8")); creative = cd["creative"]; st["hooks"] = cd["hooks"]
+        else:
+            creative = st.get("creative", [])
     for v in creative:
         for b in v.get("脚本节拍", []):
             nums = re.findall(r"\d+(?:\.\d+)?", b.get("时间", ""))
@@ -72,7 +77,7 @@ def main():
     demo = {
         "config": {"models": prompts.MODELS},
         "library": library(),
-        "prompts": {"P-A 分析原片": prompts.P_A, "P-R 推荐钩子": prompts.P_R, "P-C 生成创作思路": prompts.P_C,
+        "prompts": {"P-A 分析原片": prompts.P_A, "P-R 推荐钩子": prompts.P_R, "P-C 生成创作思路(按钩子剧情扩展)": P_C,
                     "P-P 视频生成提示词": prompts.P_PROMPT, "P-V 拆解爆款": prompts.P_V, "P-B 爆款仿写(换脸复刻)": P_B},
         "jobs": jobs,
         "samples": {m: [{"id": j, "label": lab} for j, lab in L] for m, L in SAMPLES.items()},

@@ -21,6 +21,13 @@ for jid in sys.argv[1:]:
                  角色人设="\n".join(f"{r['code']}:{r['pos']};人设:{r['persona']}" for r in roles),
                  衔接点="\n".join(f"{l['方式']}:{l['说明']}" for l in a["衔接点"]),
                  模型=meta["model"], 时长=meta["seconds"])
-    v = llm.ask(p, APP / "jobs" / jid, timeout=1200)
+    for attempt in range(3):
+        try:
+            v = llm.ask(p, APP / "jobs" / jid, timeout=1200)
+            break
+        except Exception as e:  # 模型偶尔输出不合格的 JSON,重试
+            print(jid, "第", attempt + 1, "次格式不对,重试:", str(e)[:80])
+    else:
+        raise SystemExit(jid + " 连续3次失败")
     (OUT / f"rewrite-{jid}.json").write_text(json.dumps(v, ensure_ascii=False, indent=1), encoding="utf8")
     print(jid, v.get("标题钩子"), "|", v.get("保留的爆款剧情"))

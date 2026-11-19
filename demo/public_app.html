@@ -93,7 +93,8 @@ async function post(p,b){b=b||{};const [,id,act]=p.match(/^\/api\/job\/(\w+)\/(\
    x=>{x.analysis=clone(src.analysis);x.roles=clone(src.roles);x.hooks=clone(src.hooks||[]);x.breakdown=clone(src.breakdown||null)})}
  else if(act=="creative")runTask(id,"creative",["模型正在按 3 条钩子写创作思路","正在检查爽点和衔接"],x=>{x.creative=clone(src.creative)})
  else if(act=="rewrite")runTask(id,"rewrite",["模型正在按爆款剧情换脸复刻","正在改写结尾以衔接原片"],x=>{x.creative=clone(src.creative)})
- else if(act=="prompt")runTask(id,"prompt",["正在重写提示词"],x=>{x.new_prompt=(b.version||{})["视频生成提示词"]||""})
+ else if(act=="prompt")runTask(id,"prompt",["正在按修改后的脚本重写提示词"],x=>{const v=b.version||{},base=(v["视频生成提示词"]||"").split("\n【按镜头的旁白与台词】")[0];
+  x.new_prompt=base+"\n【按镜头的旁白与台词】"+(v["脚本节拍"]||[]).map(t=>`\n${t["时间"]}:${(t["台词或旁白"]||"").trim()||"本镜头无旁白无台词"}`).join("")})
  else if(act=="simulate"){j.teaser=src.teaser_url;j.final=""}
  else if(act=="splice")runTask(id,"splice",["正在拼接前贴和原片,统一为 1080x1920"],x=>{x.final=src.teaser_url})
  else if(act=="mirror"){j.mirrors=(j.mirrors||[]).concat((b.langs||[]).map(l=>({lang:l,url:src.teaser_url,src:b.src_name||"当前原片"})))}
@@ -194,16 +195,19 @@ async function addRole(f){if(!f)return;try{const u=await putImg(f);const used=ne
 /* ---------- 第三步 ---------- */
 async function creative(auto){try{S.max=1;S.creative=[];S.ver=null;S.step=1;S._hk=JSON.stringify(S.hooks.map(h=>h.id));S.job=await post(`/api/job/${S.job.id}/creative`,{analysis:S.analysis,roles:S.roles,hooks:S.hooks});render();poll()}catch(e){alert(e.message)}}
 function ideas(){const t=T("creative"),changed=S._hk&&S._hk!=JSON.stringify(S.hooks.map(h=>h.id));
- let h=`<div class="card"><h3>创作思路 <span class="muted">按上面 3 条钩子和原片分析生成,每条钩子一个版本</span></h3>`;
+ let h=`<div class="card"><h3>创作思路 <span class="muted">每条钩子扩展成一个版本:剧情照钩子走,人物换成原片角色,结尾接原片</span></h3>`;
  if(t.status=="running")h+=`<div class="prog" style="padding:6px 0"><span class="spin"></span><b>${esc(t.stage||"正在生成")}</b></div>`;
  else if(t.status=="error")h+=`<div class="err">出错了:${esc(t.error)}</div>`;
  else if(!S.creative.length)h+=`<div class="muted">选满 3 条钩子后生成</div>`;
  else h+=`<div class="grid3">${S.creative.map((v,i)=>{const hk=S.hooks[(v["使用钩子"]||i+1)-1];return `<div class="ver ${S.ver===i?"on":""}" onclick="S.ver=${i};render()">
  <div class="muted">${esc(v["版本名称"])} · 使用钩子${v["使用钩子"]||i+1}</div>
  <input class="tt" type="text" value="${esc(v["标题钩子"])}" onclick="event.stopPropagation()" oninput="S.creative[${i}]['标题钩子']=this.value">
- <div><span class="tag">${esc(v["创作路线"])}</span></div><div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
+ ${hk?`<div class="muted" style="line-height:1.6;background:#f7f9fc;border-radius:6px;padding:6px 9px"><b>钩子剧情</b>:${esc(hk.highlight)}</div>`:""}
+ ${v["保留的钩子剧情"]?`<div style="font-size:13px;line-height:1.6"><b>扩展剧情</b>:${esc(v["保留的钩子剧情"])}</div>`:""}
+ <div class="shuang"><b>爽点</b>:${esc(v["爽点"])}</div>
  <div style="line-height:1.65">${esc(v["故事梗概"])}</div>
- <div class="muted"><b>衔接</b>:${esc((v["衔接设计"]||{})["衔接方式"])}<br>${esc((v["衔接设计"]||{})["前贴结尾状态"])}</div>
+ ${(v["人物对应"]||[]).length?`<div class="muted" style="line-height:1.9"><b>换脸</b>:${v["人物对应"].map(x=>`${esc(x["钩子人物"])} → ${av(x["原片角色"])}`).join("　")}</div>`:""}
+ <div class="muted"><b>与原片衔接</b>(${esc((v["衔接设计"]||{})["衔接方式"])}):${esc((v["衔接设计"]||{})["前贴结尾状态"])}</div>
  <div style="display:flex;gap:6px;align-items:center">${(v["出场角色"]||[]).map(av).join("")}<span class="muted">出场角色</span></div></div>`}).join("")}</div>`;
  h+=`</div><div class="acts">${changed?`<span class="warn">钩子已更换,请重新生成创作思路</span>`:""}<button class="btn ghost" onclick="S.step=0;render()">上一步</button>
  <button class="btn ghost" ${S.hooks.length==3&&t.status!="running"?"":"disabled"} onclick="creative()">${changed?"按新钩子重新生成":"都不满意,重新生成"}</button>
